@@ -307,7 +307,7 @@ export function SmartMenu({
                         onClick={() => setActiveSlug(item.slug)}
                         aria-current={selected ? 'true' : undefined}
                         className={cn(
-                          'group flex w-full items-center gap-3 rounded-lg border p-2 text-left transition-all',
+                          'fx-press group flex w-full items-center gap-3 rounded-lg border p-2 text-left transition-all duration-300 hover:translate-x-1 motion-reduce:hover:translate-x-0',
                           selected
                             ? 'border-gold bg-gold/[0.07] shadow-gold'
                             : 'border-gold/15 hover:border-gold/45 hover:bg-white/[0.02]',
@@ -320,7 +320,7 @@ export function SmartMenu({
                             fill
                             loading="lazy"
                             sizes="62px"
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="fx-zoom object-cover"
                           />
                         </span>
                         <span className="min-w-0 flex-1">

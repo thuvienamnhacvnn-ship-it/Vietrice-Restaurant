@@ -108,7 +108,7 @@
   }
 
   .card-lux-hover {
-    @apply transition-all duration-500 hover:border-gold/50 hover:shadow-gold;
+    @apply fx-lift;
   }
 
   /* Section eyebrow: small gold caps label. */
@@ -137,6 +137,104 @@
   .divider-lotus::after {
     content: '';
     @apply h-px flex-1 bg-gradient-to-r from-transparent via-gold/45 to-transparent;
+  }
+
+  /* ---- Interaction effects ------------------------------------------------
+     All of these are wrapped so `prefers-reduced-motion` disables the movement
+     but never the affordance — hover still changes colour, only the travel and
+     the sweep are dropped. */
+
+  /* Gold light sweeping across a button on hover. */
+  .fx-shine {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .fx-shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    transform: translateX(-120%) skewX(-18deg);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(255 255 255 / 0.28) 50%,
+      transparent 100%
+    );
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+  .fx-shine:hover::after,
+  .fx-shine:focus-visible::after {
+    transform: translateX(120%) skewX(-18deg);
+  }
+
+  /* Gold underline that grows from the centre. */
+  .fx-underline {
+    position: relative;
+  }
+  .fx-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: rgb(var(--c-gold));
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .fx-underline:hover::after,
+  .fx-underline:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* Slow zoom for photography inside an overflow-hidden parent. */
+  .fx-zoom {
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .group:hover .fx-zoom {
+    transform: scale(1.06);
+  }
+
+  /* Lift + gold glow on hover, for cards. */
+  .fx-lift {
+    transition:
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.45s ease,
+      border-color 0.45s ease;
+  }
+  .fx-lift:hover {
+    transform: translateY(-4px);
+    border-color: rgb(var(--c-gold) / 0.5);
+    box-shadow:
+      0 0 0 1px rgb(var(--c-gold) / 0.28),
+      0 22px 48px -18px rgb(0 0 0 / 0.9),
+      0 0 40px -14px rgb(var(--c-gold) / 0.35);
+  }
+
+  /* Press feedback shared by buttons and table cards. */
+  .fx-press {
+    transition: transform 0.12s ease;
+  }
+  .fx-press:active {
+    transform: scale(0.975);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx-shine::after {
+      display: none;
+    }
+    .fx-underline::after {
+      transition: none;
+    }
+    .fx-lift:hover,
+    .fx-press:active,
+    .group:hover .fx-zoom {
+      transform: none;
+    }
   }
 
   /* Hard scroll stop for a full-viewport section. */

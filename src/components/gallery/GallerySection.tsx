@@ -232,7 +232,7 @@ export function GallerySection({
                 type="button"
                 onClick={() => setOpenIndex(i)}
                 aria-label={`${localizedTitle(item, locale)} — ${copy.openLightbox}`}
-                className="card-lux card-lux-hover group block w-full overflow-hidden text-left"
+                className="card-lux card-lux-hover group block w-full overflow-hidden text-left fx-press"
               >
                 <span className="relative block aspect-[4/3] overflow-hidden">
                   <Image
@@ -241,7 +241,7 @@ export function GallerySection({
                     fill
                     loading="lazy"
                     sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 20vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.07]"
+                    className="fx-zoom object-cover"
                   />
                   <span
                     aria-hidden

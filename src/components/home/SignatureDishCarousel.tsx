@@ -91,7 +91,7 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
               tabIndex={active ? 0 : -1}
               onClick={() => onSelect(dish.slug)}
               className={cn(
-                'group relative w-[168px] shrink-0 snap-start overflow-hidden rounded-lg border text-left transition-all duration-400 sm:w-[186px] lg:w-full',
+                'fx-press group relative w-[168px] shrink-0 snap-start overflow-hidden rounded-lg border text-left transition-all duration-400 sm:w-[186px] lg:w-full',
                 active
                   ? 'border-gold shadow-gold'
                   : 'border-gold/15 hover:border-gold/45 hover:shadow-gold',

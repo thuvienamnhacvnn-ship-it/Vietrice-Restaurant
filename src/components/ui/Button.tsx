@@ -7,8 +7,10 @@ type Variant = 'gold' | 'outline' | 'ghost' | 'danger' | 'success'
 type Size = 'sm' | 'md' | 'lg'
 
 const base =
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-body font-medium uppercase tracking-luxe ' +
-  'transition-all duration-300 disabled:pointer-events-none disabled:opacity-45'
+  'fx-shine fx-press inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-body font-medium uppercase tracking-luxe ' +
+  'transition-all duration-300 disabled:pointer-events-none disabled:opacity-45 ' +
+  // Keep the label above the shine sweep.
+  '[&>*]:relative [&>*]:z-[2]'
 
 const variants: Record<Variant, string> = {
   // Solid gold — the primary "Reserve Table" action from the mockups.

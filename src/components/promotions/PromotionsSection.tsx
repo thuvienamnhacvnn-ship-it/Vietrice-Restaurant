@@ -154,7 +154,7 @@ export function PromotionsSection({
                     alt=""
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="fx-zoom object-cover"
                   />
                   {/* Two scrims: one lifting the bottom into the card, one
                       darkening the top-left so the headline never sinks into a

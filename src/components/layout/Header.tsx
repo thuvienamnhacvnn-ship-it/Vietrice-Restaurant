@@ -137,7 +137,7 @@ export function Header() {
                         href={item.href}
                         aria-current={active ? 'page' : undefined}
                         className={cn(
-                          'relative block px-3.5 py-3.5 text-[12.5px] font-medium uppercase tracking-luxe transition-colors xl:px-5',
+                          'group relative block px-3.5 py-3.5 text-[12.5px] font-medium uppercase tracking-luxe transition-all duration-300 xl:px-5 hover:-translate-y-px motion-reduce:hover:translate-y-0',
                           active ? 'text-gold-light' : 'text-cream/80 hover:text-gold',
                         )}
                       >
@@ -146,7 +146,7 @@ export function Header() {
                           aria-hidden
                           className={cn(
                             'absolute inset-x-3.5 bottom-2 h-px origin-center bg-gold transition-transform duration-300 xl:inset-x-5',
-                            active ? 'scale-x-100' : 'scale-x-0',
+                            active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
                           )}
                         />
                       </Link>

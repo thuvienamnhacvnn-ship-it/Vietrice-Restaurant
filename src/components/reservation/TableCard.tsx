@@ -78,7 +78,7 @@ export function TableCard({
       onClick={() => selectable && onSelect(table)}
       aria-label={`Tisch ${table.number}, ${table.capacity} ${labels.seats}, ${statusLabel}`}
       className={cn(
-        'group relative aspect-square w-full rounded-2xl p-1 ring-2 transition-all duration-300',
+        'fx-press group relative aspect-square w-full rounded-2xl p-1 ring-2 transition-all duration-300',
         STATUS_RING[table.status],
         selected && 'ring-gold shadow-gold-lg',
         selectable ? 'cursor-pointer' : 'cursor-not-allowed',

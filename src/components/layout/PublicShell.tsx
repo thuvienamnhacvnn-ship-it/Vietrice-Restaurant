@@ -6,6 +6,7 @@ import { useT } from '@/i18n/provider'
 import { AIChefLauncher } from '@/components/assistant/AIChefLauncher'
 import { Footer } from './Footer'
 import { Header } from './Header'
+import { SectionDots } from './SectionDots'
 import { SocialRail } from './SocialRail'
 
 /**
@@ -29,6 +30,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       <Header />
       <main id="main">{children}</main>
       {!footerIsInPage && <Footer />}
+      <SectionDots />
       <SocialRail />
       <AIChefLauncher />
     </>
