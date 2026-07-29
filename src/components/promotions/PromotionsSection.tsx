@@ -217,7 +217,7 @@ export function PromotionsSection({
           </div>
         )}
 
-        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 lg:mt-6 lg:gap-5 lg:pt-4 sm:grid-cols-2 xl:grid-cols-4">
           {TRUST_ITEMS.map(({ Icon, key }, i) => (
             <li key={key} className="flex items-start gap-3.5">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold/35 text-gold">

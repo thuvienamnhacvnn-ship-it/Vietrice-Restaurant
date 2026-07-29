@@ -560,7 +560,7 @@ export function SmartMenu({
         </div>
 
         {/* ---- Feature strip ---- */}
-        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 lg:mt-6 lg:gap-5 lg:pt-4 sm:grid-cols-2 xl:grid-cols-4">
           {copy.features.map((f, i) => {
             const Icon = FEATURE_ICONS[i]
             return (
