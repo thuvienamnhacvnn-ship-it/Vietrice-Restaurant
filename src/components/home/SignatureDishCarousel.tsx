@@ -76,7 +76,7 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
         // Below lg the strip swipes horizontally; from lg it becomes an
         // eight-column grid. The side padding leaves room for the two arrows
         // that flank the strip, as in the reference.
-        className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] lg:grid lg:grid-cols-8 lg:gap-2.5 lg:overflow-visible lg:px-14 [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] lg:grid lg:grid-cols-8 lg:gap-2.5 lg:overflow-visible lg:px-11 [&::-webkit-scrollbar]:hidden"
       >
         {dishes.map((dish) => {
           const active = dish.slug === activeSlug
@@ -168,10 +168,10 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
           }}
           aria-label={dir === 1 ? t.common.next : t.common.previous}
           className={cn(
-            'fx-press absolute top-[44%] z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full',
+            'fx-press absolute top-[calc(1.9rem+((100%-1.9rem-92px)/2))] z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full shadow-[0_6px_18px_rgba(0,0,0,0.75)]',
             'border border-gold/50 bg-black/65 text-gold backdrop-blur-md transition-all duration-300',
             'hover:border-gold hover:bg-gold/15 hover:text-gold-light',
-            dir === 1 ? 'right-0' : 'left-0',
+            dir === 1 ? 'right-[22px]' : 'left-[22px]',
           )}
         >
           {dir === 1 ? (

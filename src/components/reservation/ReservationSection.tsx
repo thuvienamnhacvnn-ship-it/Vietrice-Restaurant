@@ -20,6 +20,7 @@ import { Button, ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { SectionFrame } from '@/components/ui/SectionFrame'
 import { BookingModal } from './BookingModal'
+import { NoticeTicker } from './NoticeTicker'
 import { FloorDecor } from './FloorDecor'
 import { TableCard } from './TableCard'
 
@@ -431,7 +432,11 @@ export function ReservationSection({
             )}
           </div>
 
-          {/* ---- Selection summary ---- */}
+          {/* Notice ticker fills the gap beneath the filter panel and the floor
+            plan, spanning both columns. */}
+        <NoticeTicker className="mt-4 hidden h-11 self-start xl:col-span-2 xl:flex" />
+
+        {/* ---- Selection summary ---- */}
           <div className="space-y-4">
             <div className="card-lux p-4">
               <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-luxe text-gold-light">

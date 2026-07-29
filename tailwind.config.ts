@@ -74,6 +74,13 @@ const config: Config = {
         shimmer: {
           '100%': { transform: 'translateX(100%)' },
         },
+        /* The ticker track holds two copies of the list, so translating by
+           exactly -50% lands back on an identical frame — a seamless loop with
+           no JS width measuring. */
+        ticker: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up .6s cubic-bezier(.22,1,.36,1) both',

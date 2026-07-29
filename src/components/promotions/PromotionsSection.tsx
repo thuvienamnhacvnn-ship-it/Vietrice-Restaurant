@@ -146,7 +146,7 @@ export function PromotionsSection({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-80px' }}
                 transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="card-lux card-lux-hover group flex flex-col overflow-hidden"
+                className="card-lux card-lux-hover group flex flex-col overflow-visible"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image
@@ -171,10 +171,10 @@ export function PromotionsSection({
                   <PromoTimeBadge
                     endsAtIso={p.endsAtIso}
                     serverNowIso={serverNowIso}
-                    className="absolute left-4 top-3 z-10"
+                    className="mx-auto -mb-px"
                   />
 
-                  <div className="absolute inset-x-4 top-[46px]">
+                  <div className="absolute inset-x-4 top-4">
                     <h3 className="text-shadow-lux font-display text-2xl uppercase tracking-wide text-gold-light">
                       {p.title}
                     </h3>

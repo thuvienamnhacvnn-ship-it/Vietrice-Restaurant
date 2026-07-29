@@ -41,8 +41,9 @@ export function PromoTimeBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border bg-black/70 py-1 pl-2 pr-3 backdrop-blur-md',
-        urgent ? 'border-danger/55' : 'border-success/45',
+        // Oval on top, square where it meets the card, so the tab reads as part
+        // of the card frame rather than a pill floating above it.
+        'inline-flex items-center gap-2 rounded-t-full border border-b-0 border-gold/35 bg-background-soft px-4 pb-2 pt-1.5',
         className,
       )}
     >
@@ -67,8 +68,9 @@ export function PromoTimeBadge({
 
       <span
         className={cn(
-          'font-mono text-[11.5px] font-bold leading-none tabular-nums tracking-[0.05em]',
-          urgent ? 'text-danger' : 'text-success',
+          // Only the signal light carries the red/green state; the time itself
+          // stays neutral so it reads as information, not as an alarm.
+          'font-mono text-[11.5px] font-bold leading-none tabular-nums tracking-[0.05em] text-cream/90',
         )}
       >
         {c.expired

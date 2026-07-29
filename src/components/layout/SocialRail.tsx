@@ -1,6 +1,6 @@
 'use client'
 
-import { Facebook, Instagram, MapPin, Music2 } from 'lucide-react'
+import { Facebook, Instagram, MapPin, Music2, Phone } from 'lucide-react'
 
 import { site } from '@/config/site'
 import { useT } from '@/i18n/provider'
@@ -32,6 +32,22 @@ export function SocialRail({ className }: { className?: string }) {
         className,
       )}
     >
+      {/* Hotline sits above the social icons — the fastest way to reach the
+          restaurant stays the first thing in the rail. */}
+      <a
+        href={site.phone.href}
+        aria-label={`Hotline ${site.phone.display}`}
+        title={site.phone.display}
+        className="group grid h-9 w-9 place-items-center rounded-full border border-gold/60 bg-gold-gradient text-[#1a1408] shadow-gold transition-all duration-300 hover:shadow-gold-lg sm:h-10 sm:w-10"
+      >
+        <Phone
+          className="h-[15px] w-[15px] transition-transform duration-300 group-hover:scale-110 sm:h-4 sm:w-4"
+          aria-hidden
+        />
+      </a>
+
+      <span aria-hidden className="mx-auto h-3 w-px bg-gold/30" />
+
       {links.map(({ key, href, Icon }) => (
         <a
           key={key}

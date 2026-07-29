@@ -2,9 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, CalendarDays, Pause, Phone, Play, Volume2, VolumeX } from 'lucide-react'
-
-import { site } from '@/config/site'
+import { BookOpen, CalendarDays, Pause, Play, Volume2, VolumeX } from 'lucide-react'
 
 import type { SignatureDish } from '@/content/signature-dishes'
 import type { Locale } from '@/i18n/config'
@@ -172,25 +170,6 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
           </button>
         </div>
       )}
-
-      {/* ---- Hotline ---- kept at the left, just above the dish strip. */}
-      <div className="relative z-20 flex w-full shrink-0 items-center px-4 pb-2 sm:px-6 lg:px-8">
-        <a
-          href={site.phone.href}
-          className="group inline-flex items-center gap-2.5 rounded-full border border-gold/35 bg-black/45 py-1.5 pl-2 pr-4 backdrop-blur-md transition-colors hover:border-gold hover:bg-gold/10"
-        >
-          <span className="grid h-7 w-7 place-items-center rounded-full bg-gold-gradient text-[#1a1408]">
-            <Phone className="h-3.5 w-3.5" aria-hidden />
-          </span>
-          <span className="flex flex-col leading-none">
-            <span className="text-[9.5px] uppercase tracking-luxe text-muted">Hotline</span>
-            <span className="mt-0.5 text-[13.5px] font-semibold text-cream group-hover:text-gold-light">
-              {site.phone.display}
-            </span>
-          </span>
-        </a>
-
-      </div>
 
       {/* ---- Signature dish strip ----
           Full-bleed on purpose: the eight dishes span the whole screen width
