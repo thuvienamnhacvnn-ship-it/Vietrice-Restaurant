@@ -20,6 +20,7 @@ import { Button, ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { SectionFrame } from '@/components/ui/SectionFrame'
 import { BookingModal } from './BookingModal'
+import { FloorDecor } from './FloorDecor'
 import { TableCard } from './TableCard'
 
 const COPY: Record<
@@ -381,20 +382,11 @@ export function ReservationSection({
               </li>
             </ul>
 
-            <div className="relative overflow-hidden rounded-2xl border border-gold/20 p-4 sm:p-6">
-              {/* Warm wooden-floor backdrop.
-                  Deliberately CSS rather than a crop of the mockup: every part
-                  of the mockup's floor already has its table artwork drawn on
-                  it, so using it as a texture would show a second set of ghost
-                  tables underneath the real, interactive ones. */}
-              <div
-                aria-hidden
-                className="absolute inset-0 bg-[radial-gradient(ellipse_75%_60%_at_50%_38%,rgba(92,64,36,0.42),rgba(28,20,13,0.85)_62%,rgb(10,8,6)_100%)]"
-              />
-              <div
-                aria-hidden
-                className="absolute inset-0 opacity-[0.18] bg-[repeating-linear-gradient(90deg,rgba(216,174,99,0.22)_0px,rgba(216,174,99,0.22)_1px,transparent_1px,transparent_46px)]"
-              />
+            <div className="relative overflow-hidden rounded-2xl border border-gold/20 px-12 py-5 sm:px-16 sm:py-7">
+              {/* Dining-room floor: planks, side rails with banquette seating,
+                  and corner foliage — see FloorDecor for why it is drawn
+                  rather than cropped from the mockup. */}
+              <FloorDecor />
 
               <div
                 className="relative space-y-4 sm:space-y-6"

@@ -111,7 +111,12 @@ export function GallerySection({
   const copy = COPY[locale]
 
   const featured = items.find((i) => i.isFeatured) ?? items[0]
-  const tiles = items.filter((i) => i.slug !== featured?.slug)
+  /**
+   * The grid is five columns wide, matching the reference layout. Capping the
+   * tiles at five keeps it to a single row — a sixth tile would wrap onto a
+   * second row and push the section past its 16:9 frame.
+   */
+  const tiles = items.filter((i) => i.slug !== featured?.slug).slice(0, 5)
 
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 

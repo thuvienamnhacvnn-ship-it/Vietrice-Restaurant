@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MessageCircle } from 'lucide-react'
 
@@ -16,11 +17,35 @@ import { AIChatPanel } from './AIChatPanel'
  */
 export function AIChefLauncher() {
   const t = useT()
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [overHero, setOverHero] = useState(false)
+
+  /**
+   * On the home page the hero's signature-dish strip occupies the bottom of the
+   * viewport, and the reference layout puts the chef *above* that strip rather
+   * than on top of it. Lift the launcher while the hero is in view, and drop it
+   * back to the normal corner position once the page scrolls past.
+   */
+  useEffect(() => {
+    if (pathname !== '/') {
+      setOverHero(false)
+      return
+    }
+    const onScroll = () => setOverHero(window.scrollY < window.innerHeight * 0.6)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [pathname])
 
   return (
-    <div className="fixed bottom-3 right-2 z-40 flex flex-col items-end sm:bottom-4 sm:right-4">
+    <div
+      className={cn(
+        'fixed right-2 z-40 flex flex-col items-end transition-[bottom] duration-500 sm:right-4',
+        overHero ? 'bottom-[292px] short:bottom-[262px]' : 'bottom-3 sm:bottom-4',
+      )}
+    >
       <AnimatePresence>
         {open && (
           <motion.div

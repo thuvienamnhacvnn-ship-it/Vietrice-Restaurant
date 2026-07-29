@@ -99,7 +99,7 @@ export function AIAssistantSection({
             </div>
 
             {/* Chef portrait */}
-            <div className="relative mx-auto w-[220px] shrink-0 sm:w-[260px] lg:w-[300px]">
+            <div className="relative mx-auto w-[240px] shrink-0 sm:w-[300px] lg:w-[360px] xl:w-[400px]">
               <div
                 aria-hidden
                 className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(216,174,99,0.22),transparent_68%)]"

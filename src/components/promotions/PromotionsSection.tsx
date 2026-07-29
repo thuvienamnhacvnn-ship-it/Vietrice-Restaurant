@@ -156,22 +156,31 @@ export function PromotionsSection({
                     sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
+                  {/* Two scrims: one lifting the bottom into the card, one
+                      darkening the top-left so the headline never sinks into a
+                      bright patch of food photography. */}
                   <div
                     aria-hidden
                     className="absolute inset-0 bg-gradient-to-t from-background-soft via-background-soft/25 to-transparent"
                   />
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 bg-[linear-gradient(160deg,rgba(8,8,6,0.88)_0%,rgba(8,8,6,0.62)_38%,rgba(8,8,6,0.1)_68%,transparent_100%)]"
+                  />
                   <div className="absolute inset-x-4 top-4">
-                    <h3 className="font-display text-2xl uppercase tracking-wide text-gold-light">
+                    <h3 className="text-shadow-lux font-display text-2xl uppercase tracking-wide text-gold-light">
                       {p.title}
                     </h3>
-                    <p className="mt-0.5 font-display text-[28px] leading-none text-cream">
+                    <p className="text-shadow-lux mt-0.5 font-display text-[28px] leading-none text-cream">
                       {p.discountPercent !== null
                         ? `-${p.discountPercent}%`
                         : p.comboPriceCents !== null
                           ? formatPrice(p.comboPriceCents, intl)
                           : ''}
                     </p>
-                    <p className="mt-1.5 text-[12.5px] text-cream/80">{p.subtitle}</p>
+                    <p className="text-shadow-lux mt-1.5 text-[12.5px] text-cream/90">
+                      {p.subtitle}
+                    </p>
                   </div>
                 </div>
 
