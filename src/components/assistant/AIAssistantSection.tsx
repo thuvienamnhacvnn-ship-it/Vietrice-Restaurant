@@ -4,7 +4,10 @@ import Image from 'next/image'
 import { CalendarCheck, Gift, Leaf, Soup } from 'lucide-react'
 
 import { useI18n } from '@/i18n/provider'
+import { cn } from '@/lib/utils'
 import { Container } from '@/components/ui/Container'
+import { SectionFrame } from '@/components/ui/SectionFrame'
+import { Footer } from '@/components/layout/Footer'
 import { AIChatPanel } from './AIChatPanel'
 
 const QUICK_CARDS = [
@@ -19,13 +22,23 @@ const QUICK_CARDS = [
  * on a dark restaurant backdrop, intro copy and capability cards on the left,
  * and the live chat panel on the right.
  */
-export function AIAssistantSection() {
+export function AIAssistantSection({
+  /**
+   * Mockup 6 is a single 16:9 frame containing the assistant *and* the footer.
+   * `withFooter` fuses them: the assistant takes the upper band and the footer
+   * is pinned to the bottom of the same frame.
+   */
+  withFooter = false,
+}: {
+  withFooter?: boolean
+}) {
   const { t } = useI18n()
 
   return (
-    <section
+    <SectionFrame
       aria-labelledby="assistant-heading"
-      className="relative overflow-hidden border-t border-gold/10 py-14 lg:py-16"
+      className="border-t border-gold/10"
+      innerClassName={withFooter ? 'flex flex-col' : undefined}
     >
       {/* Restaurant backdrop */}
       <div aria-hidden className="absolute inset-0">
@@ -39,8 +52,14 @@ export function AIAssistantSection() {
         <div className="absolute inset-0 bg-background/85" />
       </div>
 
-      <Container wide className="relative">
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:gap-12">
+      <Container
+        wide
+        className={cn(
+          'relative flex flex-col justify-center py-10 lg:py-6',
+          withFooter ? 'min-h-0 flex-1' : 'h-full py-14 lg:py-8',
+        )}
+      >
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:gap-12">
           {/* ---- Left: intro + chef ---- */}
           <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div>
@@ -97,9 +116,13 @@ export function AIAssistantSection() {
           </div>
 
           {/* ---- Right: chat ---- */}
-          <AIChatPanel className="h-[600px] w-full" />
+          <AIChatPanel
+            className={cn('w-full', withFooter ? 'h-[430px] lg:h-[470px]' : 'h-[560px] lg:h-[600px]')}
+          />
         </div>
       </Container>
-    </section>
+
+      {withFooter && <Footer embedded />}
+    </SectionFrame>
   )
 }

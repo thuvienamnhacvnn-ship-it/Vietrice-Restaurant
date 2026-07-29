@@ -50,6 +50,9 @@ export const serviceLinks = [
   { key: 'contact', href: '/contact' },
 ] as const
 
+/** The AI Chef Assistant gets its own footer entry so the page is reachable. */
+export const assistantLink = { href: '/ai-assistant' } as const
+
 /** Footer "Customer support" column. */
 export const supportLinks = [
   { key: 'faq', href: '/faq' },

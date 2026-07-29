@@ -63,7 +63,15 @@ function LinkList({ items }: { items: { key: string; href: string; label: string
  * Site footer, laid out to match mockup 6: brand blurb, contact details,
  * services, customer support, socials + review score, and the location map.
  */
-export function Footer() {
+/**
+ * Site footer.
+ *
+ * `embedded` renders it as the lower band of the combined AI-Assistant section
+ * (mockup 6 puts both inside a single 16:9 frame): tighter vertical rhythm, no
+ * top border of its own, and the newsletter block is dropped because the mockup
+ * does not show one there. Standalone pages get the full version.
+ */
+export function Footer({ embedded = false }: { embedded?: boolean }) {
   const { t } = useI18n()
 
   const openDays = openingHours.filter((h) => !h.isClosed)
@@ -72,20 +80,37 @@ export function Footer() {
     openDays.every((h) => h.opensAt === openDays[0].opensAt && h.closesAt === openDays[0].closesAt)
 
   return (
-    <footer className="relative border-t border-gold/15 bg-background-soft/60">
-      <Container wide className="py-14 lg:py-16">
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
+    <footer
+      className={cn(
+        'relative bg-background-soft/60',
+        embedded ? 'shrink-0 border-t border-gold/12' : 'border-t border-gold/15',
+      )}
+    >
+      <Container wide className={cn(embedded ? 'py-6' : 'py-14 lg:py-16')}>
+        <div className={cn('grid gap-8 lg:grid-cols-12', embedded && 'gap-6 lg:gap-5')}>
           {/* Brand */}
-          <div className="lg:col-span-3">
-            <Logo layout="stacked" size="lg" asLink={false} className="items-start text-left" />
-            <p className="mt-5 max-w-xs text-[13.5px] leading-relaxed text-muted">
+          <div className="lg:col-span-2">
+            <Logo
+              layout="stacked"
+              size={embedded ? 'md' : 'lg'}
+              asLink={false}
+              className="items-start text-left"
+            />
+            <p
+              className={cn(
+                'mt-4 max-w-xs leading-relaxed text-muted',
+                embedded ? 'text-[12px]' : 'text-[13.5px]',
+              )}
+            >
               {t.footer.about}
             </p>
-            <div className="divider-lotus mt-6 max-w-[220px]">
-              <span aria-hidden className="text-sm">
-                ❦
-              </span>
-            </div>
+            {!embedded && (
+              <div className="divider-lotus mt-6 max-w-[220px]">
+                <span aria-hidden className="text-sm">
+                  ❦
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Contact */}
@@ -151,15 +176,18 @@ export function Footer() {
           </div>
 
           {/* Services + support */}
-          <div className="grid grid-cols-2 gap-8 lg:col-span-3">
+          <div className="grid grid-cols-2 gap-6 lg:col-span-3">
             <div>
               <ColumnTitle>{t.footer.services}</ColumnTitle>
               <LinkList
-                items={serviceLinks.map((l) => ({
-                  key: l.key,
-                  href: l.href,
-                  label: t.nav[l.key],
-                }))}
+                items={[
+                  ...serviceLinks.map((l) => ({
+                    key: l.key,
+                    href: l.href,
+                    label: t.nav[l.key],
+                  })),
+                  { key: 'assistant', href: '/ai-assistant', label: t.assistant.title },
+                ]}
               />
             </div>
             <div>
@@ -174,8 +202,8 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Social + map */}
-          <div className="lg:col-span-3">
+          {/* Social + reviews */}
+          <div className="lg:col-span-2">
             <ColumnTitle>{t.footer.connect}</ColumnTitle>
             <ul className="flex flex-wrap gap-2.5">
               {socials.map(({ key, href, Icon }) => (
@@ -217,21 +245,24 @@ export function Footer() {
                 {reviewSummary.count}+ {t.footer.reviews.toLowerCase()}
               </p>
             </div>
+          </div>
 
-            <div className="mt-6">
-              <ColumnTitle>{t.footer.location}</ColumnTitle>
-              <GoogleMap className="h-[190px] w-full" />
-            </div>
+          {/* Map — its own column, as in mockup 6 */}
+          <div className="lg:col-span-2">
+            <ColumnTitle>{t.footer.location}</ColumnTitle>
+            <GoogleMap className={cn('w-full', embedded ? 'h-[150px]' : 'h-[190px]')} />
           </div>
         </div>
 
-        {/* Newsletter */}
-        <div className="mt-12 border-t border-gold/12 pt-8">
-          <NewsletterForm />
-        </div>
+        {/* Newsletter — omitted in the embedded band; the mockup has none there. */}
+        {!embedded && (
+          <div className="mt-12 border-t border-gold/12 pt-8">
+            <NewsletterForm />
+          </div>
+        )}
       </Container>
 
-      <div className="border-t border-gold/12 py-5">
+      <div className={cn('border-t border-gold/12', embedded ? 'py-3' : 'py-5')}>
         <Container wide className="flex flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-[12.5px] text-muted">
             © {new Date().getFullYear()} {site.legalName}. {t.footer.rights}

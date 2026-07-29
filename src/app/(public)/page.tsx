@@ -5,6 +5,7 @@ import { getLocale } from '@/i18n'
 import { getActivePromotions, nextExpiring } from '@/lib/promotions'
 import { combineDateTime, getDemoTableViews, toDateInput } from '@/lib/reservation'
 import { HeroDishShowcase } from '@/components/home/HeroDishShowcase'
+import { AIAssistantSection } from '@/components/assistant/AIAssistantSection'
 import { GallerySection } from '@/components/gallery/GallerySection'
 import { PromotionsSection } from '@/components/promotions/PromotionsSection'
 import { ReservationSection } from '@/components/reservation/ReservationSection'
@@ -58,6 +59,10 @@ export default async function HomePage() {
       />
 
       <GallerySection items={galleryItems} />
+
+      {/* Section 6 — mockup 6 fuses the assistant and the footer into one
+          16:9 frame, so the footer is rendered here rather than by PublicShell. */}
+      <AIAssistantSection withFooter />
     </>
   )
 }
