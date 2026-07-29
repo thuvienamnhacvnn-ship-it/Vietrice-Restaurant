@@ -34,6 +34,16 @@
     scroll-behavior: smooth;
   }
 
+  /* One section per scroll gesture on desktop. `mandatory` + `stop: always`
+     means a flick can never skip past a section or halt between two of them.
+     Disabled below `lg`, where sections are natural height and free scrolling
+     is the expected behaviour. */
+  @media (min-width: 1024px) {
+    html {
+      scroll-snap-type: y mandatory;
+    }
+  }
+
   body {
     @apply bg-background font-body text-ink antialiased;
     background-image: radial-gradient(
@@ -127,6 +137,12 @@
   .divider-lotus::after {
     content: '';
     @apply h-px flex-1 bg-gradient-to-r from-transparent via-gold/45 to-transparent;
+  }
+
+  /* Hard scroll stop for a full-viewport section. */
+  .snap-section {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .skip-link {

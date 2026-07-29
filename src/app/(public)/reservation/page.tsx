@@ -18,13 +18,13 @@ export default function ReservationPage() {
   const tables = getDemoTableViews(combineDateTime(date, time), now)
 
   return (
-    <div className="pt-[var(--header-h)]">
+      <>
       <ReservationSection
         initialTables={tables}
         serverNowIso={now.toISOString()}
         initialDate={date}
         initialTime={time}
       />
-    </div>
+    </>
   )
 }

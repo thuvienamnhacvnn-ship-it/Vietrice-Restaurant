@@ -23,12 +23,12 @@ export default async function MenuPage() {
   )
 
   return (
-    <div className="pt-[var(--header-h)]">
+      <>
       <SmartMenu
         categories={menuCategories}
         items={menuItems}
         allergenLabels={allergenLabels}
       />
-    </div>
+    </>
   )
 }

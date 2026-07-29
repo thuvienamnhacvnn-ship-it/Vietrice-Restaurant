@@ -45,7 +45,7 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
 
   return (
     <section
-      className="relative flex min-h-[100svh] flex-col overflow-hidden"
+      className="relative flex min-h-[100svh] flex-col overflow-hidden lg:h-[100svh] lg:min-h-0 lg:snap-section"
       aria-label={t.hero.eyebrow}
     >
       {/* ---- Background media ---- */}
@@ -86,6 +86,9 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
         className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/75 to-transparent"
       />
 
+      {/* Content sits in the same centred 16:9 box as every other section; the
+          background above bleeds the full width behind it. */}
+      <div className="relative z-10 mx-auto flex w-full flex-1 flex-col lg:h-full lg:w-auto lg:max-w-full lg:flex-none lg:aspect-[16/9]">
       {/* ---- Copy block ---- */}
       <Container
         wide
@@ -189,6 +192,7 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
             onSelect={handleSelect}
           />
         </Container>
+      </div>
       </div>
     </section>
   )

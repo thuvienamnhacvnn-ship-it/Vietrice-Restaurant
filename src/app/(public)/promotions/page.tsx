@@ -16,13 +16,13 @@ export default async function PromotionsPage() {
   const soonest = nextExpiring(promotions)
 
   return (
-    <div className="pt-[var(--header-h)]">
+      <>
       <PromotionsSection
         promotions={promotions}
         soonestEndingIso={soonest?.endsAtIso ?? null}
         serverNowIso={now.toISOString()}
         showAllLink={false}
       />
-    </div>
+    </>
   )
 }

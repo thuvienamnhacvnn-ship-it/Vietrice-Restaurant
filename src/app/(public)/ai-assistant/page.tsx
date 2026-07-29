@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function AIAssistantPage() {
   return (
-    <div className="pt-[var(--header-h)]">
+      <>
       <AIAssistantSection />
-    </div>
+    </>
   )
 }

@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function GalleryPage() {
   return (
-    <div className="pt-[var(--header-h)]">
+      <>
       <GallerySection items={galleryItems} />
-    </div>
+    </>
   )
 }
