@@ -422,6 +422,10 @@ export function ReservationSection({
               </div>
             </div>
 
+            {/* Fills the band under the floor plan without adding a grid row —
+                as its own row it stretched the section past its 16:9 frame. */}
+            <NoticeTicker className="mt-3 hidden lg:flex" />
+
             {!anySelectable && (
               <p
                 role="status"
@@ -432,10 +436,7 @@ export function ReservationSection({
             )}
           </div>
 
-          {/* Notice ticker fills the gap beneath the filter panel and the floor
-            plan, spanning both columns. */}
-        <NoticeTicker className="mt-4 hidden h-11 self-start xl:col-span-2 xl:flex" />
-
+  
         {/* ---- Selection summary ---- */}
           <div className="space-y-4">
             <div className="card-lux p-4">

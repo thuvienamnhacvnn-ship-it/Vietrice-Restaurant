@@ -47,7 +47,7 @@ export function NoticeTicker({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'group relative flex h-11 shrink-0 items-stretch overflow-hidden rounded-xl border border-gold/25 bg-black/45 backdrop-blur-md',
+        'group relative flex h-10 shrink-0 items-stretch overflow-hidden rounded-xl border border-gold/25 bg-black/45 backdrop-blur-md',
         className,
       )}
     >
