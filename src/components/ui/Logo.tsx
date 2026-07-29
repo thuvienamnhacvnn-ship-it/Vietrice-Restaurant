@@ -38,7 +38,8 @@ const taglineClass: Record<Size, string> = {
   sm: 'text-[9px] tracking-[0.08em]',
   md: 'text-[9px] tracking-[0.08em]',
   lg: 'text-[11px] tracking-[0.12em] sm:text-xs',
-  xl: 'text-[11px] tracking-[0.12em] sm:text-xs',
+  // Extra breathing room under the hero wordmark, as in the reference.
+  xl: 'mt-2 text-[11px] tracking-[0.12em] sm:text-[13px]',
 }
 
 export function Logo({
@@ -67,9 +68,11 @@ export function Logo({
         className={cn('shrink-0', markClass[size])}
       />
       <span className={cn('flex flex-col', layout === 'stacked' && 'items-center')}>
+        {/* The reference sets the wordmark in a heavy sans, not the display
+            serif used for headings. */}
         <span
           className={cn(
-            'font-display font-medium leading-none tracking-luxe text-gold-gradient',
+            'font-body font-bold leading-none tracking-luxe text-gold-gradient',
             wordClass[size],
           )}
         >

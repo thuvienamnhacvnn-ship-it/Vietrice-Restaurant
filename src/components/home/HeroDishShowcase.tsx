@@ -93,10 +93,12 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
         wide
         className="relative z-10 flex flex-1 items-center pb-8 pt-[calc(var(--header-h)+24px)] lg:max-w-[calc(100svh*16/9)] short:pb-4 short:pt-[calc(var(--header-h)+8px)]"
       >
-        <div className="w-full max-w-xl lg:max-w-[560px]">
-          <Logo layout="stacked" size="xl" asLink={false} className="items-start text-left" />
+        {/* The reference centres the whole cluster inside the left column
+            rather than left-aligning it. */}
+        <div className="flex w-full max-w-xl flex-col items-center text-center lg:max-w-[600px]">
+          <Logo layout="stacked" size="xl" asLink={false} />
 
-          <div className="divider-lotus my-4 max-w-[340px] lg:my-5 short:my-2">
+          <div className="divider-lotus my-4 w-full max-w-[360px] lg:my-5 short:my-2">
             <span aria-hidden className="text-base">
               ❦
             </span>
@@ -110,41 +112,28 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
-              <h1 className="text-shadow-lux font-display text-[34px] font-light leading-[1.08] text-cream sm:text-[42px] lg:text-[46px] short:text-[38px]">
+              {/* Warm cream-to-gold wash, as in the reference. */}
+              <h1 className="text-shadow-lux bg-[linear-gradient(180deg,#fbf3e2_0%,#f0d9a8_58%,#d8ae63_100%)] bg-clip-text font-display text-[34px] font-light leading-[1.08] text-transparent sm:text-[44px] lg:text-[50px] short:text-[40px]">
                 {t.hero.titleLine1}
               </h1>
-              <p className="text-shadow-lux mt-1 font-script text-[30px] leading-tight text-gold-light sm:text-[36px] lg:text-[40px] short:text-[32px]">
+              <p className="text-shadow-lux mt-1 font-script text-[32px] leading-tight text-gold-light sm:text-[40px] lg:text-[46px] short:text-[36px]">
                 {t.hero.titleLine2}
               </p>
 
-              <p className="text-shadow-lux mt-3.5 whitespace-pre-line text-[14.5px] leading-relaxed text-cream/85 short:mt-2.5">
+              <p className="text-shadow-lux mt-4 whitespace-pre-line text-[15px] leading-relaxed text-cream/90 short:mt-3">
                 {t.hero.subtitle}
-              </p>
-
-              {/* Active dish detail — the part that changes with the carousel. */}
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 short:mt-3">
-                <span className="font-display text-xl uppercase tracking-wider text-gold-light lg:text-2xl">
-                  {localizedName(active, locale as Locale)}
-                </span>
-                <span className="text-[13px] text-muted">
-                  {localizedSubtitle(active, locale as Locale)}
-                </span>
-                <span className="rounded-full border border-gold/40 px-2.5 py-0.5 text-[13px] font-medium text-gold">
-                  {formatPrice(active.priceCents, intl)}
-                </span>
-              </div>
-              <p className="mt-1.5 line-clamp-2 max-w-md text-[13px] leading-relaxed text-muted">
-                {localizedDescription(active, locale as Locale)}
               </p>
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3 short:mt-4">
-            <ButtonLink href="/reservation" size="lg">
+          {/* The reference shows only the two CTAs here — the active dish's
+              name, price and description live on the carousel card below. */}
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-4 short:mt-5">
+            <ButtonLink href="/reservation" size="lg" className="min-w-[210px]">
               <CalendarDays className="h-4 w-4" aria-hidden />
               {t.common.reserveTable}
             </ButtonLink>
-            <ButtonLink href="/menu" size="lg" variant="outline">
+            <ButtonLink href="/menu" size="lg" variant="outline" className="min-w-[210px]">
               <BookOpen className="h-4 w-4" aria-hidden />
               {t.common.viewMenu}
             </ButtonLink>
