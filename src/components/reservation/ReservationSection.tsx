@@ -182,11 +182,14 @@ export function ReservationSection({
   serverNowIso,
   initialDate,
   initialTime,
+  showNotice = false,
 }: {
   initialTables: TableView[]
   serverNowIso: string
   initialDate: string
   initialTime: string
+  /** Notice ticker belongs to the standalone page, not the home section. */
+  showNotice?: boolean
 }) {
   const { t, locale } = useI18n()
   const copy = COPY[locale]
@@ -238,7 +241,7 @@ export function ReservationSection({
       className="border-t border-gold/10 bg-background"
     >
       <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
-        <div className="grid gap-5 xl:grid-cols-[262px_minmax(0,1fr)_256px] xl:gap-10 2xl:gap-14">
+        <div className="grid flex-1 gap-5 xl:min-h-0 xl:grid-cols-[262px_minmax(0,1fr)_256px] xl:grid-rows-[minmax(0,1fr)_auto] xl:gap-x-10 xl:gap-y-4 2xl:gap-x-14">
           {/* ---- Filter panel ---- */}
           <div>
             <h2
@@ -422,9 +425,6 @@ export function ReservationSection({
               </div>
             </div>
 
-            {/* Fills the band under the floor plan without adding a grid row —
-                as its own row it stretched the section past its 16:9 frame. */}
-            <NoticeTicker className="mt-3 hidden lg:flex" />
 
             {!anySelectable && (
               <p
@@ -521,7 +521,9 @@ export function ReservationSection({
           </div>
         </div>
 
-        </Container>
+          {/* Full-width notice bar closing the section. */}
+        {showNotice && <NoticeTicker className="mt-4 hidden lg:flex xl:col-span-3 xl:mt-0" />}
+      </Container>
 
       <BookingModal
         open={modalOpen}

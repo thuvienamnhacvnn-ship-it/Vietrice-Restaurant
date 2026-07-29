@@ -24,6 +24,7 @@ export default function ReservationPage() {
         serverNowIso={now.toISOString()}
         initialDate={date}
         initialTime={time}
+        showNotice
       />
     </>
   )
