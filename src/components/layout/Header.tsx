@@ -95,8 +95,8 @@ export function Header() {
             {/* Brand + contact details, folded into the single desktop bar. */}
             <div className="flex min-w-0 items-center gap-4 justify-self-start">
               <Logo size="sm" withTagline={false} />
-              <span aria-hidden className="hidden h-5 w-px bg-gold/20 2xl:block" />
-              <ul className="hidden min-w-0 items-center gap-4 text-[12px] text-cream/70 2xl:flex">
+              <span aria-hidden className="hidden h-5 w-px bg-gold/20 [@media(min-width:1650px)]:block" />
+              <ul className="hidden min-w-0 items-center gap-4 whitespace-nowrap text-[12px] text-cream/70 [@media(min-width:1650px)]:flex">
                 <li className="flex items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
                   <span className="truncate">{site.address.full}</span>

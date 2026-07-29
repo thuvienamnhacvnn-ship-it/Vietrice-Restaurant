@@ -72,7 +72,7 @@ export function Logo({
             serif used for headings. */}
         <span
           className={cn(
-            'font-body font-bold leading-none tracking-luxe text-gold-gradient',
+            'whitespace-nowrap font-body font-bold leading-none tracking-luxe text-gold-gradient',
             wordClass[size],
           )}
         >
