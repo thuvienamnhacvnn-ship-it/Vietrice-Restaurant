@@ -93,7 +93,18 @@ export function useCountdown(targetIso: string, serverNowIso?: string): Countdow
     serverNowIso ? new Date(serverNowIso).getTime() - Date.now() : 0,
   )
 
-  const [value, setValue] = useState<Countdown>(() => diff(targetMs, Date.now() + offset))
+  /**
+   * Seed from the server's timestamp, not from `Date.now()`.
+   *
+   * The server renders this component too, and real time passes between that
+   * render and hydration — seeding from the browser clock made the two disagree
+   * by a second and threw a hydration mismatch on every countdown. Both sides
+   * now derive the first frame from the same `serverNowIso`, and the effect
+   * below switches to live time immediately after mount.
+   */
+  const [value, setValue] = useState<Countdown>(() =>
+    diff(targetMs, serverNowIso ? new Date(serverNowIso).getTime() : Date.now()),
+  )
 
   useEffect(() => {
     const update = (nowMs: number) => setValue(diff(targetMs, nowMs + offset))

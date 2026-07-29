@@ -86,13 +86,12 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
         className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/75 to-transparent"
       />
 
-      {/* Content sits in the same centred 16:9 box as every other section; the
-          background above bleeds the full width behind it. */}
-      <div className="relative z-10 mx-auto flex w-full flex-1 flex-col lg:h-full lg:w-auto lg:max-w-full lg:flex-none lg:aspect-[16/9]">
-      {/* ---- Copy block ---- */}
+      {/* ---- Copy block ----
+          Constrained to the 16:9 width so it lines up with every other
+          section; the dish strip below deliberately breaks out to full width. */}
       <Container
         wide
-        className="relative z-10 flex flex-1 items-center pb-8 pt-[calc(var(--header-h)+24px)] short:pb-4 short:pt-[calc(var(--header-h)+8px)]"
+        className="relative z-10 flex flex-1 items-center pb-8 pt-[calc(var(--header-h)+24px)] lg:max-w-[calc(100svh*16/9)] short:pb-4 short:pt-[calc(var(--header-h)+8px)]"
       >
         <div className="w-full max-w-xl lg:max-w-[560px]">
           <Logo layout="stacked" size="xl" asLink={false} className="items-start text-left" />
@@ -183,16 +182,15 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
         </div>
       )}
 
-      {/* ---- Signature dish strip ---- */}
-      <div className="relative z-10 shrink-0 pb-5 short:pb-3">
-        <Container wide>
-          <SignatureDishCarousel
-            dishes={dishes}
-            activeSlug={active.slug}
-            onSelect={handleSelect}
-          />
-        </Container>
-      </div>
+      {/* ---- Signature dish strip ----
+          Full-bleed on purpose: the eight dishes span the whole screen width
+          rather than sitting inside the 16:9 content box. */}
+      <div className="relative z-10 w-full shrink-0 px-4 pb-5 sm:px-6 lg:px-8 short:pb-3">
+        <SignatureDishCarousel
+          dishes={dishes}
+          activeSlug={active.slug}
+          onSelect={handleSelect}
+        />
       </div>
     </section>
   )

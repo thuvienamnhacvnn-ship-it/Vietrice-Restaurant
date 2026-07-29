@@ -73,7 +73,9 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
         role="radiogroup"
         aria-label={t.hero.dishCarouselLabel}
         onKeyDown={onKeyDown}
-        className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        // Below lg the strip swipes horizontally; from lg it becomes an
+        // eight-column grid so the dishes span the full screen width evenly.
+        className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] lg:grid lg:grid-cols-8 lg:overflow-visible [&::-webkit-scrollbar]:hidden"
       >
         {dishes.map((dish) => {
           const active = dish.slug === activeSlug
@@ -89,7 +91,7 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
               tabIndex={active ? 0 : -1}
               onClick={() => onSelect(dish.slug)}
               className={cn(
-                'group relative w-[168px] shrink-0 snap-start overflow-hidden rounded-lg border text-left transition-all duration-400 sm:w-[186px] lg:w-[196px] short:lg:w-[176px]',
+                'group relative w-[168px] shrink-0 snap-start overflow-hidden rounded-lg border text-left transition-all duration-400 sm:w-[186px] lg:w-full',
                 active
                   ? 'border-gold shadow-gold'
                   : 'border-gold/15 hover:border-gold/45 hover:shadow-gold',
@@ -153,7 +155,8 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
         type="button"
         onClick={() => scrollBy(1)}
         aria-label={t.common.next}
-        className="absolute right-1 top-[38%] hidden h-10 w-10 place-items-center rounded-full border border-gold/50 bg-black/60 text-gold backdrop-blur-md transition-colors hover:border-gold hover:bg-gold/15 xl:grid"
+        // Only meaningful while the strip scrolls; the lg grid shows all eight.
+        className="absolute right-1 top-[38%] hidden h-10 w-10 place-items-center rounded-full border border-gold/50 bg-black/60 text-gold backdrop-blur-md transition-colors hover:border-gold hover:bg-gold/15 max-lg:grid"
       >
         <ChevronRight className="h-5 w-5" aria-hidden />
       </button>

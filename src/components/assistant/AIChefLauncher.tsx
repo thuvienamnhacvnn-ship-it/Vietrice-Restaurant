@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -23,6 +23,72 @@ export function AIChefLauncher() {
   const [overHero, setOverHero] = useState(false)
 
   /**
+   * Right-button drag. `offset` is a delta from the launcher's docked corner
+   * position, so the default placement still follows the hero/scroll rules
+   * above until the guest actually moves it.
+   */
+  const [offset, setOffset] = useState<{ x: number; y: number } | null>(null)
+  const [dragging, setDragging] = useState(false)
+  const dragRef = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(
+    null,
+  )
+
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      // Right button only — left click still opens the chat.
+      if (e.button !== 2) return
+      e.preventDefault()
+      dragRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        baseX: offset?.x ?? 0,
+        baseY: offset?.y ?? 0,
+      }
+      setDragging(true)
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    },
+    [offset],
+  )
+
+  const onPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      const d = dragRef.current
+      if (!d) return
+      setOffset({
+        x: d.baseX + (e.clientX - d.startX),
+        y: d.baseY + (e.clientY - d.startY),
+      })
+    },
+    [],
+  )
+
+  const endDrag = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return
+    dragRef.current = null
+    setDragging(false)
+    if ((e.currentTarget as HTMLElement).hasPointerCapture?.(e.pointerId)) {
+      ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+    }
+  }, [])
+
+  // Keep the launcher on screen if the window is resized after a drag.
+  useEffect(() => {
+    if (!offset) return
+    const clamp = () => {
+      setOffset((o) =>
+        o
+          ? {
+              x: Math.max(-window.innerWidth + 180, Math.min(0, o.x)),
+              y: Math.max(-window.innerHeight + 200, Math.min(200, o.y)),
+            }
+          : o,
+      )
+    }
+    window.addEventListener('resize', clamp)
+    return () => window.removeEventListener('resize', clamp)
+  }, [offset])
+
+  /**
    * On the home page the hero's signature-dish strip occupies the bottom of the
    * viewport, and the reference layout puts the chef *above* that strip rather
    * than on top of it. Lift the launcher while the hero is in view, and drop it
@@ -41,10 +107,20 @@ export function AIChefLauncher() {
 
   return (
     <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      // Suppress the browser menu so the right button is free for dragging.
+      onContextMenu={(e) => e.preventDefault()}
       className={cn(
-        'fixed right-2 z-40 flex flex-col items-end transition-[bottom] duration-500 sm:right-4',
-        overHero ? 'bottom-[292px] short:bottom-[262px]' : 'bottom-3 sm:bottom-4',
+        'fixed right-2 z-40 flex flex-col items-end sm:right-4',
+        !offset && 'transition-[bottom] duration-500',
+        overHero && !offset ? 'bottom-[292px] short:bottom-[262px]' : 'bottom-3 sm:bottom-4',
+        dragging && 'cursor-grabbing select-none',
       )}
+      style={offset ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
+      title={t.assistant.title}
     >
       <AnimatePresence>
         {open && (

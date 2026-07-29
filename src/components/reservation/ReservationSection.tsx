@@ -236,7 +236,7 @@ export function ReservationSection({
       aria-labelledby="reservation-heading"
       className="border-t border-gold/10 bg-background"
     >
-      <Container wide className="flex h-full flex-col justify-center py-14 lg:py-8">
+      <Container wide className="flex h-full flex-col justify-center py-14 lg:py-4">
         <div className="grid gap-7 xl:grid-cols-[320px_minmax(0,1fr)_300px]">
           {/* ---- Filter panel ---- */}
           <div>
