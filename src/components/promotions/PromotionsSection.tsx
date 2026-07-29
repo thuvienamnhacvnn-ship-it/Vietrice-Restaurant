@@ -56,12 +56,13 @@ const TRUST_COPY: Record<
   ],
 }
 
-const HEADING: Record<'de' | 'en' | 'vi', { title: string; script: string; body: string; endsIn: string; all: string }> = {
+const HEADING: Record<'de' | 'en' | 'vi', { title: string; script: string; body: string; endsIn: string; offerLabel: string; all: string }> = {
   de: {
     title: 'Special Promotions',
     script: 'Great food, great offer!',
     body: 'Entdecken Sie unsere aktuellen Angebote\nund geniessen Sie mehr für weniger.',
     endsIn: 'Angebot endet in',
+    offerLabel: 'Angebot',
     all: 'Alle Aktionen ansehen',
   },
   en: {
@@ -69,6 +70,7 @@ const HEADING: Record<'de' | 'en' | 'vi', { title: string; script: string; body:
     script: 'Great food, great offer!',
     body: 'Discover our current offers\nand enjoy more for less.',
     endsIn: 'Offer ends in',
+    offerLabel: 'Offer',
     all: 'See all promotions',
   },
   vi: {
@@ -76,6 +78,7 @@ const HEADING: Record<'de' | 'en' | 'vi', { title: string; script: string; body:
     script: 'Great food, great offer!',
     body: 'Khám phá các ưu đãi hiện có\nvà tận hưởng nhiều hơn với chi phí ít hơn.',
     endsIn: 'Ưu đãi kết thúc sau',
+    offerLabel: 'Ưu đãi',
     all: 'Xem tất cả ưu đãi',
   },
 }
@@ -140,14 +143,23 @@ export function PromotionsSection({
           {promotions.map((p, i) => {
             const Icon = CARD_ICON[i % CARD_ICON.length]
             return (
-              <motion.li
-                key={p.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="card-lux card-lux-hover group flex flex-col overflow-visible"
-              >
+              // Deliberately NOT animated. Both whileInView and a staggered
+              // `animate` left cards frozen part-way (measured 0.92 / 0.77 /
+              // 0.38 / 0 opacity across the row) inside the snap-scrolled page.
+              // A promotion the guest cannot see is worse than one that does
+              // not fade in, so these render at full opacity.
+              <li key={p.id} className="group relative flex flex-col pt-[26px]">
+                {/* Tab fused to the top of the card: oval above, square where it
+                    meets the frame. Sits outside the card's overflow so it can
+                    protrude without being clipped. */}
+                <PromoTimeBadge
+                  label={copy.offerLabel}
+                  endsAtIso={p.endsAtIso}
+                  serverNowIso={serverNowIso}
+                  className="absolute left-1/2 top-0 z-10 -translate-x-1/2"
+                />
+
+                <div className="card-lux card-lux-hover flex flex-1 flex-col overflow-hidden">
                 <div className="relative aspect-[16/10] overflow-hidden">
                   <Image
                     src={p.image}
@@ -166,12 +178,6 @@ export function PromotionsSection({
                   <div
                     aria-hidden
                     className="absolute inset-x-0 top-0 h-[62%] bg-[linear-gradient(180deg,rgba(8,8,6,0.82)_0%,rgba(8,8,6,0.45)_45%,transparent_100%)]"
-                  />
-                  {/* Remaining time + signal light, top of every card */}
-                  <PromoTimeBadge
-                    endsAtIso={p.endsAtIso}
-                    serverNowIso={serverNowIso}
-                    className="mx-auto -mb-px"
                   />
 
                   <div className="absolute inset-x-4 top-4">
@@ -210,7 +216,8 @@ export function PromotionsSection({
                     {p.ctaType === 'ORDER' ? t.common.orderNow : t.common.reserveTable}
                   </ButtonLink>
                 </div>
-              </motion.li>
+                </div>
+              </li>
             )
           })}
         </ul>

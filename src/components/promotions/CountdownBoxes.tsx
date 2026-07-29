@@ -25,10 +25,13 @@ const REMAINING_LABEL: Record<'de' | 'en' | 'vi', { d: string; h: string; ended:
  * three days. Anchored to server time like every other countdown here.
  */
 export function PromoTimeBadge({
+  label,
   endsAtIso,
   serverNowIso,
   className,
 }: {
+  /** Section title carried on the tab, e.g. "Angebot". */
+  label: string
   endsAtIso: string
   serverNowIso: string
   className?: string
@@ -43,10 +46,15 @@ export function PromoTimeBadge({
       className={cn(
         // Oval on top, square where it meets the card, so the tab reads as part
         // of the card frame rather than a pill floating above it.
-        'inline-flex items-center gap-2 rounded-t-full border border-b-0 border-gold/35 bg-background-soft px-4 pb-2 pt-1.5',
+        'inline-flex items-center gap-2.5 whitespace-nowrap rounded-t-full border border-b-0 border-gold/40 bg-background-soft px-5 pb-2.5 pt-2 shadow-[0_-4px_16px_-6px_rgba(216,174,99,0.35)]',
         className,
       )}
     >
+      <span className="text-[10.5px] font-semibold uppercase tracking-luxe text-gold-light">
+        {label}
+      </span>
+      <span aria-hidden className="h-3 w-px bg-gold/30" />
+
       {/* Signal light */}
       <span className="relative grid h-3 w-3 place-items-center">
         <span
