@@ -21,7 +21,7 @@ import { ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { SectionFrame } from '@/components/ui/SectionFrame'
 import { SectionHeading } from '@/components/ui/SectionHeading'
-import { CountdownBoxes } from './CountdownBoxes'
+import { CountdownBoxes, PromoTimeBadge } from './CountdownBoxes'
 
 const CARD_ICON = [Gift, Users, Utensils, Sparkles]
 
@@ -167,7 +167,14 @@ export function PromotionsSection({
                     aria-hidden
                     className="absolute inset-x-0 top-0 h-[62%] bg-[linear-gradient(180deg,rgba(8,8,6,0.82)_0%,rgba(8,8,6,0.45)_45%,transparent_100%)]"
                   />
-                  <div className="absolute inset-x-4 top-4">
+                  {/* Remaining time + signal light, top of every card */}
+                  <PromoTimeBadge
+                    endsAtIso={p.endsAtIso}
+                    serverNowIso={serverNowIso}
+                    className="absolute left-4 top-3 z-10"
+                  />
+
+                  <div className="absolute inset-x-4 top-[46px]">
                     <h3 className="text-shadow-lux font-display text-2xl uppercase tracking-wide text-gold-light">
                       {p.title}
                     </h3>

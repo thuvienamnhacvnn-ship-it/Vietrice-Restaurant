@@ -237,7 +237,7 @@ export function ReservationSection({
       className="border-t border-gold/10 bg-background"
     >
       <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
-        <div className="grid gap-5 xl:gap-4 xl:grid-cols-[268px_minmax(0,1fr)_262px]">
+        <div className="grid gap-5 xl:grid-cols-[262px_minmax(0,1fr)_256px] xl:gap-10 2xl:gap-14">
           {/* ---- Filter panel ---- */}
           <div>
             <h2

@@ -52,7 +52,9 @@ export function Logo({
   const content = (
     <span
       className={cn(
-        'flex items-center gap-3',
+        // `flex-nowrap` keeps the mark and wordmark on one line even when the
+        // header bar is tight — the wordmark must never break across two rows.
+        'flex flex-nowrap items-center gap-3 whitespace-nowrap',
         layout === 'stacked' && 'flex-col gap-2 text-center',
         className,
       )}

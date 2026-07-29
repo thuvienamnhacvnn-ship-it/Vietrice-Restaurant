@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Mail, MapPin, Menu as MenuIcon, Phone } from 'lucide-react'
+import { Mail, Menu as MenuIcon, Phone } from 'lucide-react'
 
 import { mainNav, site } from '@/config/site'
 import { useI18n } from '@/i18n/provider'
@@ -95,11 +95,13 @@ export function Header() {
             {/* Brand + contact details, folded into the single desktop bar. */}
             <div className="flex min-w-0 items-center gap-4 justify-self-start">
               <Logo size="sm" withTagline={false} />
-              <span aria-hidden className="hidden h-5 w-px bg-gold/20 [@media(min-width:1650px)]:block" />
-              <ul className="hidden min-w-0 items-center gap-4 whitespace-nowrap text-[12px] text-cream/70 [@media(min-width:1650px)]:flex">
+              <span aria-hidden className="hidden h-5 w-px bg-gold/20 xl:block" />
+              <ul className="hidden min-w-0 items-center gap-4 whitespace-nowrap text-[12px] text-cream/70 xl:flex">
                 <li className="flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
-                  <span className="truncate">{site.address.full}</span>
+                  <Phone className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
+                  <a href={site.phone.href} className="font-medium hover:text-gold">
+                    {site.phone.display}
+                  </a>
                 </li>
                 <li className="flex items-center gap-1.5">
                   <Mail className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
