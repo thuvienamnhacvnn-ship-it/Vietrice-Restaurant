@@ -237,7 +237,7 @@ export function ReservationSection({
       className="border-t border-gold/10 bg-background"
     >
       <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
-        <div className="grid gap-7 xl:grid-cols-[320px_minmax(0,1fr)_300px]">
+        <div className="grid gap-5 xl:gap-4 xl:grid-cols-[268px_minmax(0,1fr)_262px]">
           {/* ---- Filter panel ---- */}
           <div>
             <h2
@@ -389,12 +389,12 @@ export function ReservationSection({
               <FloorDecor />
 
               <div
-                className="relative space-y-4 sm:space-y-6"
+                className="relative space-y-5 sm:space-y-8 xl:space-y-10"
                 role="radiogroup"
                 aria-label={copy.chooseTable}
               >
                 {rows.map((row) => (
-                  <div key={row} className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-5">
+                  <div key={row} className="grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-8 xl:gap-10">
                     {tables
                       .filter((tb) => tb.gridRow === row)
                       .sort((a, b) => a.gridCol - b.gridCol)

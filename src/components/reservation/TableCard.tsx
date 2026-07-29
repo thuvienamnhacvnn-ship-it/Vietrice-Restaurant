@@ -1,31 +1,41 @@
 'use client'
 
-import { CheckCircle2, Clock, Lock, Wrench } from 'lucide-react'
+import { Lock, Phone, Wrench } from 'lucide-react'
 
 import { useCountdown } from '@/hooks/useCountdown'
 import { isSelectable, type TableView } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
 import { TableGraphic } from './TableGraphic'
 
-/** Live remaining time for a busy table, anchored to server time. */
+/**
+ * Remaining time on a busy table, styled as a red digital readout.
+ * Anchored to server time, so a skewed browser clock cannot free a table early.
+ */
 function BusyCountdown({ untilIso, serverNowIso }: { untilIso: string; serverNowIso: string }) {
   const c = useCountdown(untilIso, serverNowIso)
-  if (c.expired) return <span className="tabular-nums">00:00</span>
-  const totalMinutes = c.days * 24 * 60 + c.hours * 60 + c.minutes
+  const totalMinutes = c.expired ? 0 : c.days * 24 * 60 + c.hours * 60 + c.minutes
+  const seconds = c.expired ? 0 : c.seconds
+
   return (
-    <span className="tabular-nums">
-      {String(totalMinutes).padStart(2, '0')}:{String(c.seconds).padStart(2, '0')}
+    <span
+      className={cn(
+        'inline-flex items-center rounded-[3px] border border-danger/55 bg-black/80 px-1.5 py-[2px]',
+        'font-mono text-[11px] font-bold leading-none tabular-nums tracking-[0.08em] text-danger',
+        'shadow-[0_0_10px_-2px_rgb(239_68_68/0.75)]',
+      )}
+    >
+      {String(totalMinutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
     </span>
   )
 }
 
 const STATUS_RING: Record<TableView['status'], string> = {
   AVAILABLE: 'ring-transparent hover:ring-gold/70',
-  PENDING: 'ring-warning/60',
-  RESERVED: 'ring-warning/60',
-  OCCUPIED: 'ring-danger/65',
-  BLOCKED: 'ring-white/20',
-  MAINTENANCE: 'ring-white/20',
+  PENDING: 'ring-warning/55',
+  RESERVED: 'ring-warning/55',
+  OCCUPIED: 'ring-danger/50',
+  BLOCKED: 'ring-white/15',
+  MAINTENANCE: 'ring-white/15',
 }
 
 function graphicTone(status: TableView['status'], selected: boolean) {
@@ -36,9 +46,12 @@ function graphicTone(status: TableView['status'], selected: boolean) {
 }
 
 /**
- * One table on the floor plan. Renders as a radio-style button so the whole map
- * is keyboard navigable; unavailable tables are disabled rather than hidden so
- * their state stays legible to screen readers.
+ * One table on the floor plan.
+ *
+ * Free tables render brighter with a pulsing green "call to book" marker; busy
+ * ones dim, seat their guests and show a red countdown. Rendered as a radio so
+ * the whole map is keyboard navigable, and unavailable tables stay in the DOM
+ * (disabled) so their state remains legible to screen readers.
  */
 export function TableCard({
   table,
@@ -53,21 +66,28 @@ export function TableCard({
   selected: boolean
   serverNowIso: string
   onSelect: (table: TableView) => void
-  labels: { available: string; occupied: string; pending: string; blocked: string; seats: string; tooSmall: string }
+  labels: {
+    available: string
+    occupied: string
+    pending: string
+    blocked: string
+    seats: string
+    tooSmall: string
+  }
 }) {
   const selectable = isSelectable(table, partySize)
   const tooSmall = table.status === 'AVAILABLE' && partySize > table.capacity
+  const occupied = table.status === 'OCCUPIED'
 
-  const statusLabel =
-    table.status === 'AVAILABLE'
+  const statusLabel = occupied
+    ? labels.occupied
+    : table.status === 'AVAILABLE'
       ? tooSmall
         ? labels.tooSmall
         : labels.available
-      : table.status === 'OCCUPIED'
-        ? labels.occupied
-        : table.status === 'PENDING' || table.status === 'RESERVED'
-          ? labels.pending
-          : labels.blocked
+      : table.status === 'PENDING' || table.status === 'RESERVED'
+        ? labels.pending
+        : labels.blocked
 
   return (
     <button
@@ -82,59 +102,67 @@ export function TableCard({
         STATUS_RING[table.status],
         selected && 'ring-gold shadow-gold-lg',
         selectable ? 'cursor-pointer' : 'cursor-not-allowed',
-        table.status === 'BLOCKED' || table.status === 'MAINTENANCE' ? 'opacity-55' : '',
+        // Busy tables sit back; free ones stay bright and forward.
+        occupied ? 'opacity-80 saturate-[0.75]' : 'opacity-100',
+        (table.status === 'BLOCKED' || table.status === 'MAINTENANCE') && 'opacity-50',
         tooSmall && 'opacity-45',
       )}
     >
-      {/* Top-down table drawing — chairs and covers scale with capacity. */}
       <TableGraphic
         shape={table.shape}
         capacity={table.capacity}
         tone={graphicTone(table.status, selected)}
+        occupied={occupied}
         className={cn(
           'transition-transform duration-300',
-          selectable && 'group-hover:scale-[1.04]',
+          selectable && 'group-hover:scale-[1.05]',
         )}
       />
 
-      {/* Table number, centred on the wood */}
+      {/* Table number */}
       <span
         className={cn(
-          'pointer-events-none absolute inset-0 flex items-center justify-center font-display text-[26px] leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]',
-          table.status === 'OCCUPIED' ? 'text-danger' : selected ? 'text-gold-light' : 'text-cream',
+          'pointer-events-none absolute inset-0 flex items-center justify-center font-display text-[22px] leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]',
+          occupied ? 'text-danger/90' : selected ? 'text-gold-light' : 'text-cream',
         )}
       >
         {table.number}
       </span>
 
-      {/* Status badge, bottom-right of the table shape */}
-      <span
-        className={cn(
-          'absolute bottom-2 right-2 grid place-items-center rounded-full',
-          table.status === 'AVAILABLE' && !tooSmall && 'h-8 w-8 bg-success text-white shadow-[0_2px_10px_rgba(0,0,0,0.7)]',
-          table.status === 'PENDING' && 'h-6 w-6 border border-warning/60 bg-warning/20 text-warning',
-          (table.status === 'BLOCKED' || table.status === 'MAINTENANCE') &&
-            'h-6 w-6 border border-white/20 bg-white/10 text-muted',
-        )}
-      >
-        {table.status === 'AVAILABLE' && !tooSmall && (
-          <CheckCircle2 className="h-5 w-5" aria-hidden />
-        )}
-        {table.status === 'PENDING' && <Lock className="h-3.5 w-3.5" aria-hidden />}
-        {table.status === 'MAINTENANCE' && <Wrench className="h-3.5 w-3.5" aria-hidden />}
+      {/* Seat count, small and unobtrusive */}
+      <span className="pointer-events-none absolute inset-x-0 top-[64%] text-center text-[9.5px] font-medium text-cream/60 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+        {table.capacity} {labels.seats}
       </span>
 
-      {/* Occupied tables show a live countdown instead of a badge */}
-      {table.status === 'OCCUPIED' && table.busyUntilIso && (
-        <span className="pointer-events-none absolute inset-x-0 top-[61%] flex items-center justify-center gap-1 text-[12px] font-semibold tabular-nums text-danger drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
-          <Clock className="h-3 w-3" aria-hidden />
+      {/* Busy: red digital countdown */}
+      {occupied && table.busyUntilIso && (
+        <span className="pointer-events-none absolute inset-x-0 bottom-1 flex justify-center">
           <BusyCountdown untilIso={table.busyUntilIso} serverNowIso={serverNowIso} />
         </span>
       )}
 
+      {/* Free: pulsing green call marker */}
+      {table.status === 'AVAILABLE' && !tooSmall && (
+        <span className="pointer-events-none absolute bottom-1.5 right-1.5 grid h-8 w-8 place-items-center">
+          <span
+            aria-hidden
+            className="absolute inset-0 rounded-full bg-success/45 motion-safe:animate-ping"
+          />
+          <span className="relative grid h-7 w-7 place-items-center rounded-full bg-success text-white shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+            <Phone className="h-3.5 w-3.5" aria-hidden />
+          </span>
+        </span>
+      )}
+
       {(table.status === 'PENDING' || table.status === 'RESERVED') && (
-        <span className="pointer-events-none absolute inset-x-0 top-[74%] text-center text-[10px] font-semibold uppercase tracking-wide text-warning drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
-          {labels.pending}
+        <span className="pointer-events-none absolute bottom-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full border border-warning/60 bg-warning/20 text-warning">
+          <Lock className="h-3.5 w-3.5" aria-hidden />
+        </span>
+      )}
+
+      {table.status === 'MAINTENANCE' && (
+        <span className="pointer-events-none absolute bottom-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full border border-white/20 bg-white/10 text-muted">
+          <Wrench className="h-3.5 w-3.5" aria-hidden />
         </span>
       )}
     </button>

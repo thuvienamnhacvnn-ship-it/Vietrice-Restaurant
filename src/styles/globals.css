@@ -26,6 +26,14 @@
     --header-h: calc(var(--header-top-h) + var(--header-nav-h));
   }
 
+  /* Desktop folds the contact strip into the navigation row, so the header is
+     a single bar and everything below it gains back that height. */
+  @media (min-width: 1024px) {
+    :root {
+      --header-h: var(--header-nav-h);
+    }
+  }
+
   * {
     @apply border-white/10;
   }

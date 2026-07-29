@@ -50,40 +50,18 @@ export function Header() {
           collapsed && 'shadow-[0_10px_40px_-20px_rgba(0,0,0,0.95)]',
         )}
       >
-        {/* ---- Layer 1: contact strip (collapses on scroll at lg+) ---- */}
+        {/* ---- Layer 1: mobile bar ----
+            Desktop folds its contents into the navigation row below; this bar
+            only survives under `lg`, where the nav row is hidden and this is
+            the only home for the brand and the drawer trigger. */}
         <div
-          aria-hidden={collapsed ? true : undefined}
           className={cn(
-            'overflow-hidden border-b border-gold/12 backdrop-blur-md transition-all duration-500 ease-out',
-            collapsed
-              ? 'bg-black/85 lg:pointer-events-none lg:max-h-0 lg:border-b-0 lg:opacity-0'
-              : 'bg-black/40 lg:max-h-24 lg:opacity-100',
+            'overflow-hidden border-b border-gold/12 backdrop-blur-md transition-all duration-500 ease-out lg:hidden',
+            collapsed ? 'bg-black/85' : 'bg-black/40',
           )}
         >
           <div className="mx-auto flex max-w-[1720px] items-center gap-4 px-4 py-2.5 lg:px-8">
-            <ul className="hidden min-w-0 flex-1 items-center gap-5 text-[12.5px] text-cream/75 xl:flex">
-              <li className="flex items-center gap-2">
-                <MapPin className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
-                <span className="truncate">{site.address.full}</span>
-              </li>
-              <li aria-hidden className="h-4 w-px bg-gold/25" />
-              <li className="flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
-                <a href={site.phone.href} className="hover:text-gold">
-                  {site.phone.display}
-                </a>
-              </li>
-              <li aria-hidden className="h-4 w-px bg-gold/25" />
-              <li className="flex items-center gap-2">
-                <Mail className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
-                <a href={`mailto:${site.email}`} className="hover:text-gold">
-                  {site.email}
-                </a>
-              </li>
-            </ul>
-
-            {/* Compact brand on the left below xl, where the contact list is hidden. */}
-            <div className="flex flex-1 items-center xl:hidden">
+            <div className="flex flex-1 items-center">
               <Logo size="sm" withTagline={false} />
             </div>
 
@@ -113,17 +91,23 @@ export function Header() {
             collapsed ? 'bg-black/85' : 'bg-black/30',
           )}
         >
-          <div className="mx-auto grid max-w-[1720px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 lg:px-8">
-            {/* Brand slides in only once the contact strip is gone. */}
-            <div
-              className={cn(
-                'justify-self-start transition-all duration-500',
-                collapsed
-                  ? 'translate-x-0 opacity-100'
-                  : 'pointer-events-none -translate-x-2 opacity-0',
-              )}
-            >
+          <div className="mx-auto grid max-w-[1800px] grid-cols-[auto_1fr_auto] items-center gap-6 px-4 lg:px-6">
+            {/* Brand + contact details, folded into the single desktop bar. */}
+            <div className="flex min-w-0 items-center gap-4 justify-self-start">
               <Logo size="sm" withTagline={false} />
+              <span aria-hidden className="hidden h-5 w-px bg-gold/20 2xl:block" />
+              <ul className="hidden min-w-0 items-center gap-4 text-[12px] text-cream/70 2xl:flex">
+                <li className="flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
+                  <span className="truncate">{site.address.full}</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
+                  <a href={`mailto:${site.email}`} className="hover:text-gold">
+                    {site.email}
+                  </a>
+                </li>
+              </ul>
             </div>
 
             <nav aria-label={t.common.menu}>
@@ -137,7 +121,7 @@ export function Header() {
                         href={item.href}
                         aria-current={active ? 'page' : undefined}
                         className={cn(
-                          'group relative block px-3.5 py-3.5 text-[12.5px] font-medium uppercase tracking-luxe transition-all duration-300 xl:px-5 hover:-translate-y-px motion-reduce:hover:translate-y-0',
+                          'group relative block whitespace-nowrap px-2.5 py-3.5 text-[11.5px] font-medium uppercase tracking-[0.1em] transition-all duration-300 hover:-translate-y-px motion-reduce:hover:translate-y-0 xl:px-3.5 xl:text-[12px] 2xl:px-4',
                           active ? 'text-gold-light' : 'text-cream/80 hover:text-gold',
                         )}
                       >
@@ -145,7 +129,7 @@ export function Header() {
                         <span
                           aria-hidden
                           className={cn(
-                            'absolute inset-x-3.5 bottom-2 h-px origin-center bg-gold transition-transform duration-300 xl:inset-x-5',
+                            'absolute inset-x-2.5 bottom-2 h-px origin-center bg-gold transition-transform duration-300 xl:inset-x-3.5',
                             active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100',
                           )}
                         />
@@ -156,14 +140,7 @@ export function Header() {
               </ul>
             </nav>
 
-            <div
-              className={cn(
-                'flex items-center gap-3 justify-self-end transition-all duration-500',
-                collapsed
-                  ? 'translate-x-0 opacity-100'
-                  : 'pointer-events-none translate-x-2 opacity-0',
-              )}
-            >
+            <div className="flex items-center gap-3 justify-self-end">
               <LocaleSwitcher />
               <ButtonLink href="/reservation" size="sm">
                 {t.common.reserveTable}

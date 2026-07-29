@@ -2,7 +2,9 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, CalendarDays, Pause, Play, Volume2, VolumeX } from 'lucide-react'
+import { BookOpen, CalendarDays, Pause, Phone, Play, Volume2, VolumeX } from 'lucide-react'
+
+import { site } from '@/config/site'
 
 import type { SignatureDish } from '@/content/signature-dishes'
 import type { Locale } from '@/i18n/config'
@@ -91,11 +93,11 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
           section; the dish strip below deliberately breaks out to full width. */}
       <Container
         wide
-        className="relative z-10 flex flex-1 items-center pb-8 pt-[calc(var(--header-h)+24px)] lg:max-w-[calc(100svh*16/9)] short:pb-4 short:pt-[calc(var(--header-h)+8px)]"
+        className="relative z-10 flex flex-1 items-center pb-8 pt-[calc(var(--header-h)+24px)] lg:!px-0 lg:!mx-0 lg:!max-w-none short:pb-4 short:pt-[calc(var(--header-h)+8px)]"
       >
         {/* The reference centres the whole cluster inside the left column
             rather than left-aligning it. */}
-        <div className="flex w-full max-w-xl flex-col items-center text-center lg:max-w-[600px]">
+        <div className="flex w-full max-w-xl flex-col items-center text-center lg:ml-6 lg:max-w-[560px] xl:ml-10">
           <Logo layout="stacked" size="xl" asLink={false} />
 
           <div className="divider-lotus my-4 w-full max-w-[360px] lg:my-5 short:my-2">
@@ -141,10 +143,29 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
         </div>
       </Container>
 
-      {/* ---- Media controls (only meaningful once real footage exists) ---- */}
-      {hasVideo && (
-        <div className="absolute right-4 top-[calc(var(--header-h)+20px)] z-20 flex gap-2 sm:right-6 lg:right-20">
-          <button
+      {/* ---- Hotline + media controls ----
+          A single row directly above the dish strip: the hotline sits at the
+          left edge and the playback controls at the right, so the two balance
+          each other across the banner. */}
+      <div className="relative z-20 flex w-full shrink-0 items-center justify-between px-4 pb-2 sm:px-6 lg:px-8">
+        <a
+          href={site.phone.href}
+          className="group inline-flex items-center gap-2.5 rounded-full border border-gold/35 bg-black/45 py-1.5 pl-2 pr-4 backdrop-blur-md transition-colors hover:border-gold hover:bg-gold/10"
+        >
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-gold-gradient text-[#1a1408]">
+            <Phone className="h-3.5 w-3.5" aria-hidden />
+          </span>
+          <span className="flex flex-col leading-none">
+            <span className="text-[9.5px] uppercase tracking-luxe text-muted">Hotline</span>
+            <span className="mt-0.5 text-[13.5px] font-semibold text-cream group-hover:text-gold-light">
+              {site.phone.display}
+            </span>
+          </span>
+        </a>
+
+        {hasVideo && (
+          <div className="flex gap-2">
+            <button
             type="button"
             onClick={() => setPlaying((p) => !p)}
             aria-label={playing ? t.common.pauseVideo : t.common.playVideo}
@@ -162,14 +183,15 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
             aria-label={muted ? t.common.unmuteVideo : t.common.muteVideo}
             className="grid h-9 w-9 place-items-center rounded-full border border-gold/45 bg-black/55 text-gold backdrop-blur-md transition-colors hover:border-gold hover:bg-gold/15"
           >
-            {muted ? (
-              <VolumeX className="h-4 w-4" aria-hidden />
-            ) : (
-              <Volume2 className="h-4 w-4" aria-hidden />
-            )}
-          </button>
-        </div>
-      )}
+              {muted ? (
+                <VolumeX className="h-4 w-4" aria-hidden />
+              ) : (
+                <Volume2 className="h-4 w-4" aria-hidden />
+              )}
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* ---- Signature dish strip ----
           Full-bleed on purpose: the eight dishes span the whole screen width

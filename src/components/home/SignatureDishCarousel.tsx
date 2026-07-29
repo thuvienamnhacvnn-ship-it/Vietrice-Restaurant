@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import { ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import type { SignatureDish } from '@/content/signature-dishes'
 import type { Locale } from '@/i18n/config'
@@ -74,8 +74,9 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
         aria-label={t.hero.dishCarouselLabel}
         onKeyDown={onKeyDown}
         // Below lg the strip swipes horizontally; from lg it becomes an
-        // eight-column grid so the dishes span the full screen width evenly.
-        className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] lg:grid lg:grid-cols-8 lg:overflow-visible [&::-webkit-scrollbar]:hidden"
+        // eight-column grid. The side padding leaves room for the two arrows
+        // that flank the strip, as in the reference.
+        className="flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] lg:grid lg:grid-cols-8 lg:gap-2.5 lg:overflow-visible lg:px-14 [&::-webkit-scrollbar]:hidden"
       >
         {dishes.map((dish) => {
           const active = dish.slug === activeSlug
@@ -150,16 +151,36 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
         })}
       </div>
 
-      {/* Desktop scroll affordance, mirroring the arrow in the mockup. */}
-      <button
-        type="button"
-        onClick={() => scrollBy(1)}
-        aria-label={t.common.next}
-        // Only meaningful while the strip scrolls; the lg grid shows all eight.
-        className="absolute right-1 top-[38%] hidden h-10 w-10 place-items-center rounded-full border border-gold/50 bg-black/60 text-gold backdrop-blur-md transition-colors hover:border-gold hover:bg-gold/15 max-lg:grid"
-      >
-        <ChevronRight className="h-5 w-5" aria-hidden />
-      </button>
+      {/* Arrows flanking the strip on both sides, as in the reference. Below lg
+          they scroll the swipe strip; from lg they step the active dish, since
+          the grid already shows all eight. */}
+      {([-1, 1] as const).map((dir) => (
+        <button
+          key={dir}
+          type="button"
+          onClick={() => {
+            const i = dishes.findIndex((d) => d.slug === activeSlug)
+            if (window.matchMedia('(min-width: 1024px)').matches && i >= 0) {
+              onSelect(dishes[(i + dir + dishes.length) % dishes.length].slug)
+            } else {
+              scrollBy(dir)
+            }
+          }}
+          aria-label={dir === 1 ? t.common.next : t.common.previous}
+          className={cn(
+            'fx-press absolute top-[44%] z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full',
+            'border border-gold/50 bg-black/65 text-gold backdrop-blur-md transition-all duration-300',
+            'hover:border-gold hover:bg-gold/15 hover:text-gold-light',
+            dir === 1 ? 'right-0' : 'left-0',
+          )}
+        >
+          {dir === 1 ? (
+            <ChevronRight className="h-5 w-5" aria-hidden />
+          ) : (
+            <ChevronLeft className="h-5 w-5" aria-hidden />
+          )}
+        </button>
+      ))}
     </div>
   )
 }

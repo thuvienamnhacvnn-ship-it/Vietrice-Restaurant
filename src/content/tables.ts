@@ -13,21 +13,30 @@ export type TableSeed = {
   zone: string
 }
 
+/**
+ * A real dining room mixes table sizes, so the floor plan does too: two-tops
+ * along the window row, four-tops in the middle, and round six-tops for larger
+ * parties. `capacity` drives both the seating rule and the drawing — the graphic
+ * renders exactly this many chairs and covers.
+ */
 export const restaurantTables: TableSeed[] = [
-  { number: 1, capacity: 4, minCapacity: 1, gridRow: 1, gridCol: 1, shape: 'square', zone: 'Main Hall' },
-  { number: 2, capacity: 4, minCapacity: 1, gridRow: 1, gridCol: 2, shape: 'square', zone: 'Main Hall' },
-  { number: 3, capacity: 4, minCapacity: 1, gridRow: 1, gridCol: 3, shape: 'square', zone: 'Main Hall' },
-  { number: 4, capacity: 4, minCapacity: 1, gridRow: 1, gridCol: 4, shape: 'square', zone: 'Main Hall' },
+  // Row 1 — two-tops and four-tops
+  { number: 1, capacity: 2, minCapacity: 1, gridRow: 1, gridCol: 1, shape: 'square', zone: 'Window' },
+  { number: 2, capacity: 4, minCapacity: 2, gridRow: 1, gridCol: 2, shape: 'square', zone: 'Main Hall' },
+  { number: 3, capacity: 2, minCapacity: 1, gridRow: 1, gridCol: 3, shape: 'square', zone: 'Window' },
+  { number: 4, capacity: 4, minCapacity: 2, gridRow: 1, gridCol: 4, shape: 'square', zone: 'Main Hall' },
 
-  { number: 5, capacity: 6, minCapacity: 2, gridRow: 2, gridCol: 1, shape: 'round', zone: 'Main Hall' },
-  { number: 6, capacity: 6, minCapacity: 2, gridRow: 2, gridCol: 2, shape: 'round', zone: 'Main Hall' },
-  { number: 7, capacity: 6, minCapacity: 2, gridRow: 2, gridCol: 3, shape: 'round', zone: 'Main Hall' },
-  { number: 8, capacity: 6, minCapacity: 2, gridRow: 2, gridCol: 4, shape: 'round', zone: 'Main Hall' },
+  // Row 2 — round six-tops
+  { number: 5, capacity: 6, minCapacity: 3, gridRow: 2, gridCol: 1, shape: 'round', zone: 'Main Hall' },
+  { number: 6, capacity: 6, minCapacity: 3, gridRow: 2, gridCol: 2, shape: 'round', zone: 'Main Hall' },
+  { number: 7, capacity: 6, minCapacity: 3, gridRow: 2, gridCol: 3, shape: 'round', zone: 'Main Hall' },
+  { number: 8, capacity: 6, minCapacity: 3, gridRow: 2, gridCol: 4, shape: 'round', zone: 'Main Hall' },
 
-  { number: 9, capacity: 4, minCapacity: 1, gridRow: 3, gridCol: 1, shape: 'square', zone: 'Private Room' },
-  { number: 10, capacity: 4, minCapacity: 1, gridRow: 3, gridCol: 2, shape: 'square', zone: 'Private Room' },
-  { number: 11, capacity: 4, minCapacity: 1, gridRow: 3, gridCol: 3, shape: 'square', zone: 'Private Room' },
-  { number: 12, capacity: 4, minCapacity: 1, gridRow: 3, gridCol: 4, shape: 'square', zone: 'Private Room' },
+  // Row 3 — four-tops and two-tops
+  { number: 9, capacity: 4, minCapacity: 2, gridRow: 3, gridCol: 1, shape: 'square', zone: 'Private Room' },
+  { number: 10, capacity: 2, minCapacity: 1, gridRow: 3, gridCol: 2, shape: 'square', zone: 'Private Room' },
+  { number: 11, capacity: 4, minCapacity: 2, gridRow: 3, gridCol: 3, shape: 'square', zone: 'Private Room' },
+  { number: 12, capacity: 6, minCapacity: 3, gridRow: 3, gridCol: 4, shape: 'round', zone: 'Private Room' },
 ]
 
 /** Bookable slot length in minutes, and the granularity of the time picker. */
