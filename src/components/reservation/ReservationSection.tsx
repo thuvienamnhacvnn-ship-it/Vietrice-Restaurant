@@ -236,7 +236,7 @@ export function ReservationSection({
       aria-labelledby="reservation-heading"
       className="border-t border-gold/10 bg-background"
     >
-      <Container wide className="flex h-full flex-col justify-center py-14 lg:py-4">
+      <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
         <div className="grid gap-7 xl:grid-cols-[320px_minmax(0,1fr)_300px]">
           {/* ---- Filter panel ---- */}
           <div>
@@ -363,7 +363,7 @@ export function ReservationSection({
 
           {/* ---- Floor plan ---- */}
           <div>
-            <ul className="mb-4 flex flex-wrap items-center justify-center gap-5 text-[12.5px]">
+            <ul className="mb-3 flex flex-wrap items-center justify-center gap-5 text-[12.5px]">
               <li className="flex items-center gap-2">
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-success text-white">
                   <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
@@ -382,7 +382,7 @@ export function ReservationSection({
               </li>
             </ul>
 
-            <div className="relative overflow-hidden rounded-2xl border border-gold/20 px-12 py-5 sm:px-16 sm:py-7">
+            <div className="relative overflow-hidden rounded-2xl border border-gold/20 px-12 py-5 sm:px-16 sm:py-7 lg:py-3">
               {/* Dining-room floor: planks, side rails with banquette seating,
                   and corner foliage — see FloorDecor for why it is drawn
                   rather than cropped from the mockup. */}
@@ -515,26 +515,7 @@ export function ReservationSection({
           </div>
         </div>
 
-        {/* ---- Trust strip ---- */}
-        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 lg:mt-6 lg:gap-5 lg:pt-4 sm:grid-cols-2 xl:grid-cols-4">
-          {copy.trust.map((item, i) => {
-            const Icon = TRUST_ICONS[i]
-            return (
-              <li key={item.title} className="flex items-start gap-3.5">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold/35 text-gold">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
-                <div>
-                  <h3 className="font-display text-[17px] uppercase tracking-wide text-cream">
-                    {item.title}
-                  </h3>
-                  <p className="mt-0.5 text-[12.5px] leading-snug text-muted">{item.body}</p>
-                </div>
-              </li>
-            )
-          })}
-        </ul>
-      </Container>
+        </Container>
 
       <BookingModal
         open={modalOpen}

@@ -231,7 +231,7 @@ export function SmartMenu({
       aria-labelledby="smart-menu-heading"
       className="border-t border-gold/10 bg-background"
     >
-      <Container wide className="flex h-full flex-col justify-center py-14 lg:py-8">
+      <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
         <div className="grid gap-8 lg:grid-cols-[190px_minmax(0,270px)_minmax(0,1fr)] lg:gap-7">
           {/* ---- Column 1: title, search, categories ---- */}
           <div>
@@ -560,16 +560,16 @@ export function SmartMenu({
         </div>
 
         {/* ---- Feature strip ---- */}
-        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 lg:mt-6 lg:gap-5 lg:pt-4 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 lg:mt-4 lg:gap-4 lg:pt-3 sm:grid-cols-2 xl:grid-cols-4">
           {copy.features.map((f, i) => {
             const Icon = FEATURE_ICONS[i]
             return (
               <li key={f.title} className="flex items-start gap-3.5">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold/35 text-gold">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold/35 text-gold lg:h-9 lg:w-9">
                   <Icon className="h-5 w-5" aria-hidden />
                 </span>
                 <div>
-                  <h3 className="font-display text-[17px] uppercase tracking-wide text-cream">
+                  <h3 className="font-display text-[17px] uppercase tracking-wide text-cream lg:text-[15px]">
                     {f.title}
                   </h3>
                   <p className="mt-0.5 text-[12.5px] leading-snug text-muted">{f.body}</p>

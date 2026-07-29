@@ -66,6 +66,39 @@ export function FloorDecor() {
       <SideRail side="left" />
       <SideRail side="right" />
 
+      {/* Foliage running the full height of both side walls, as in MX1 */}
+      {(['left', 'right'] as const).map((side) => (
+        <svg
+          key={side}
+          viewBox="0 0 40 300"
+          preserveAspectRatio="none"
+          className="absolute inset-y-0 w-[34px] sm:w-[42px]"
+          style={side === 'left' ? { left: 0 } : { right: 0, transform: 'scaleX(-1)' }}
+        >
+          {Array.from({ length: 26 }, (_, i) => {
+            const y = i * 12 + (i % 2 ? 4 : 0)
+            const x = 6 + (i % 3) * 7
+            const rot = (i % 2 ? 1 : -1) * (18 + (i % 4) * 12)
+            const greens = ['#1d3a18', '#24451d', '#2c5423', '#2f5b26']
+            return (
+              <ellipse
+                key={i}
+                cx={x}
+                cy={y}
+                rx={10}
+                ry={4.2}
+                fill={greens[i % greens.length]}
+                transform={`rotate(${rot} ${x} ${y})`}
+                opacity="0.92"
+              />
+            )
+          })}
+          {Array.from({ length: 7 }, (_, i) => (
+            <circle key={`l${i}`} cx={10 + (i % 2) * 8} cy={i * 44 + 20} r="1" fill="#f0d49a" opacity="0.85" />
+          ))}
+        </svg>
+      ))}
+
       {/* Warm wall wash from the sconces along each rail */}
       <div className="absolute inset-y-0 left-0 w-[120px] bg-[linear-gradient(90deg,rgba(216,174,99,0.10),transparent)]" />
       <div className="absolute inset-y-0 right-0 w-[120px] bg-[linear-gradient(270deg,rgba(216,174,99,0.10),transparent)]" />

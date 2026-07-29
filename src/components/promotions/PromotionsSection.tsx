@@ -114,7 +114,7 @@ export function PromotionsSection({
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_75%_20%,rgba(216,174,99,0.10),transparent_70%)]"
       />
 
-      <Container wide className="relative flex h-full flex-col justify-center py-14 lg:py-8">
+      <Container wide className="relative flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <SectionHeading
             title={copy.title}
@@ -217,10 +217,10 @@ export function PromotionsSection({
           </div>
         )}
 
-        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 lg:mt-6 lg:gap-5 lg:pt-4 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mt-12 grid gap-6 border-t border-gold/12 pt-8 lg:mt-4 lg:gap-4 lg:pt-3 sm:grid-cols-2 xl:grid-cols-4">
           {TRUST_ITEMS.map(({ Icon, key }, i) => (
             <li key={key} className="flex items-start gap-3.5">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold/35 text-gold">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-gold/35 text-gold lg:h-9 lg:w-9">
                 <Icon className="h-5 w-5" aria-hidden />
               </span>
               <div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { CheckCircle2, Clock, Lock, Users, Wrench } from 'lucide-react'
+import { CheckCircle2, Clock, Lock, Wrench } from 'lucide-react'
 
 import { useCountdown } from '@/hooks/useCountdown'
 import { isSelectable, type TableView } from '@/lib/reservation'
@@ -107,27 +107,18 @@ export function TableCard({
         {table.number}
       </span>
 
-      {/* Capacity, tucked under the number. Hidden while a countdown occupies
-          that space, so the two never collide. */}
-      {table.status !== 'OCCUPIED' && (
-        <span className="pointer-events-none absolute inset-x-0 top-[62%] flex items-center justify-center gap-1 text-[10.5px] text-cream/75 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-          <Users className="h-3 w-3" aria-hidden />
-          {table.capacity}
-        </span>
-      )}
-
       {/* Status badge, bottom-right of the table shape */}
       <span
         className={cn(
-          'absolute bottom-1.5 right-1.5 grid place-items-center rounded-full',
-          table.status === 'AVAILABLE' && !tooSmall && 'h-6 w-6 bg-success text-white',
+          'absolute bottom-2 right-2 grid place-items-center rounded-full',
+          table.status === 'AVAILABLE' && !tooSmall && 'h-8 w-8 bg-success text-white shadow-[0_2px_10px_rgba(0,0,0,0.7)]',
           table.status === 'PENDING' && 'h-6 w-6 border border-warning/60 bg-warning/20 text-warning',
           (table.status === 'BLOCKED' || table.status === 'MAINTENANCE') &&
             'h-6 w-6 border border-white/20 bg-white/10 text-muted',
         )}
       >
         {table.status === 'AVAILABLE' && !tooSmall && (
-          <CheckCircle2 className="h-4 w-4" aria-hidden />
+          <CheckCircle2 className="h-5 w-5" aria-hidden />
         )}
         {table.status === 'PENDING' && <Lock className="h-3.5 w-3.5" aria-hidden />}
         {table.status === 'MAINTENANCE' && <Wrench className="h-3.5 w-3.5" aria-hidden />}
