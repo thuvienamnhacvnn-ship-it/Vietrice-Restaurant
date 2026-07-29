@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --------------------------------------------------------------------------
+   VIET RICE design tokens
+   Channel triplets so Tailwind can apply <alpha-value>.
+   -------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --c-background: 8 8 6; /* #080806 */
+    --c-background-soft: 18 16 13; /* #12100d */
+    --c-surface: 18 16 13; /* used with /78 alpha */
+    --c-gold: 216 174 99; /* #d8ae63 */
+    --c-gold-light: 237 202 134; /* #edca86 */
+    --c-gold-dark: 168 128 66;
+    --c-cream: 244 234 215; /* #f4ead7 */
+    --c-text: 245 241 232; /* #f5f1e8 */
+    --c-text-muted: 184 174 157; /* #b8ae9d */
+    --c-success: 34 197 94; /* #22c55e */
+    --c-danger: 239 68 68; /* #ef4444 */
+    --c-warning: 234 179 8;
+
+    --header-top-h: 56px;
+    --header-nav-h: 52px;
+    --header-h: calc(var(--header-top-h) + var(--header-nav-h));
+  }
+
+  * {
+    @apply border-white/10;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-body text-ink antialiased;
+    background-image: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      rgb(var(--c-gold) / 0.06),
+      transparent 60%
+    );
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+  }
+
+  /* Cormorant Garamond defaults to old-style figures, which renders "1" like a
+     small-caps "I" and "10" like "IO". Force lining figures everywhere the
+     display face is used so table numbers, prices and countdowns stay legible. */
+  .font-display,
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-variant-numeric: lining-nums;
+  }
+
+  /* Keyboard focus is always visible; pointer focus is not. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-gold ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    @apply bg-gold/30 text-cream;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-background-soft;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gold/25;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold/45;
+  }
+}
+
+@layer components {
+  /* Thin gold hairline used across cards and dividers. */
+  .hairline {
+    @apply border border-gold/20;
+  }
+
+  /* Translucent dark card, the core surface of the design. */
+  .card-lux {
+    @apply hairline rounded-xl bg-surface/[0.78] backdrop-blur-md;
+  }
+
+  .card-lux-hover {
+    @apply transition-all duration-500 hover:border-gold/50 hover:shadow-gold;
+  }
+
+  /* Section eyebrow: small gold caps label. */
+  .eyebrow {
+    @apply font-body text-[11px] font-medium uppercase tracking-wide2 text-gold/80;
+  }
+
+  /* Gold gradient text used on headlines. */
+  .text-gold-gradient {
+    background: linear-gradient(
+      100deg,
+      rgb(var(--c-gold-dark)) 0%,
+      rgb(var(--c-gold-light)) 42%,
+      rgb(var(--c-gold)) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Ornamental divider: ──── ❦ ──── */
+  .divider-lotus {
+    @apply flex items-center gap-3 text-gold/60;
+  }
+  .divider-lotus::before,
+  .divider-lotus::after {
+    content: '';
+    @apply h-px flex-1 bg-gradient-to-r from-transparent via-gold/45 to-transparent;
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200]
+           focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-gold;
+  }
+}
+
+@layer utilities {
+  /* Blends a bright-on-black cut-out into a dark background. */
+  .blend-screen {
+    mix-blend-mode: screen;
+  }
+
+  .text-shadow-lux {
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.85), 0 1px 3px rgba(0, 0, 0, 0.9);
+  }
+
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+}
+
+/* Honour the OS "reduce motion" setting everywhere, including Framer Motion
+   driven transforms and the 3D ingredient layer. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

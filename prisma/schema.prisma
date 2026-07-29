@@ -1,0 +1,776 @@
+// VIET RICE — Vietnamesisches Restaurant & Sushi Berlin
+// Prisma schema. See README.md for migration + seed instructions.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  MANAGER
+  STAFF
+}
+
+enum ReservationStatus {
+  PENDING
+  CALLBACK_REQUIRED
+  CONFIRMED
+  SEATED
+  COMPLETED
+  REJECTED
+  CANCELLED
+  NO_SHOW
+}
+
+enum TableStatus {
+  AVAILABLE
+  PENDING
+  RESERVED
+  OCCUPIED
+  BLOCKED
+  MAINTENANCE
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderType {
+  PICKUP
+  DINE_IN
+}
+
+enum PaymentMethod {
+  PAY_AT_RESTAURANT
+  PAY_ON_PICKUP
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum SpicyLevel {
+  NONE
+  MILD
+  MEDIUM
+  HOT
+  VERY_HOT
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  MODEL_3D
+}
+
+enum GalleryCategory {
+  RESTAURANT
+  SUSHI_BAR
+  PRIVATE_ROOM
+  OUTDOOR_AREA
+  ATMOSPHERE
+  FOOD_PRESENTATION
+}
+
+enum NotificationType {
+  RESERVATION_NEW
+  RESERVATION_UPDATED
+  ORDER_NEW
+  ORDER_UPDATED
+  NEWSLETTER_SIGNUP
+  SYSTEM
+}
+
+enum CallOutcome {
+  CONFIRMED
+  NO_ANSWER
+  REJECTED
+  CANCELLED
+  CALLBACK_REQUIRED
+}
+
+enum Locale {
+  DE
+  EN
+  VI
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+// ---------------------------------------------------------------------------
+// Auth & staff
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(STAFF)
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  reservationLogs ReservationStatusLog[]
+  reservationActs ReservationHistory[]
+  auditLogs       AuditLog[]
+  notifications   Notification[]        @relation("NotificationRecipient")
+
+  @@index([role])
+  @@map("users")
+}
+
+/// Throttles credential stuffing. Keyed by "<ip>|<email>".
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  ip        String?
+  email     String?
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+  @@map("login_attempts")
+}
+
+// ---------------------------------------------------------------------------
+// Tables & reservations
+// ---------------------------------------------------------------------------
+
+model RestaurantTable {
+  id          String      @id @default(cuid())
+  number      Int         @unique
+  name        String?
+  capacity    Int
+  minCapacity Int         @default(1)
+  status      TableStatus @default(AVAILABLE)
+  /// Layout position on the floor map (grid row/column, 1-indexed).
+  gridRow     Int         @default(1)
+  gridCol     Int         @default(1)
+  shape       String      @default("square") // square | round
+  zone        String?     // e.g. "Main Hall", "Sushi Bar", "Private Room"
+  isActive    Boolean     @default(true)
+  notes       String?
+  /// Manual block window used for maintenance / private events.
+  blockedFrom DateTime?
+  blockedTo   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  reservations Reservation[]
+
+  @@index([status])
+  @@map("restaurant_tables")
+}
+
+model Customer {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String
+  email        String?
+  locale       Locale   @default(DE)
+  notes        String?
+  totalVisits  Int      @default(0)
+  marketingOptIn Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  reservations Reservation[]
+  orders       Order[]
+
+  @@unique([phone])
+  @@index([email])
+  @@map("customers")
+}
+
+model Reservation {
+  id        String @id @default(cuid())
+  /// Human-facing booking code shown to the guest, e.g. "VR-8H3K2P".
+  code      String @unique
+
+  tableId   String
+  table     RestaurantTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // Guest contact is denormalised so a reservation stays readable even if the
+  // customer record is later erased under a GDPR request.
+  guestName  String
+  guestPhone String
+  guestEmail String?
+
+  partySize Int
+  /// Inclusive start of the seating window (UTC).
+  startsAt  DateTime
+  /// Exclusive end of the seating window (UTC). startsAt + durationMinutes.
+  endsAt    DateTime
+  durationMinutes Int @default(90)
+
+  status ReservationStatus @default(PENDING)
+
+  occasion       String?
+  isBirthday     Boolean @default(false)
+  needsHighChair Boolean @default(false)
+  allergyNotes   String?
+  notes          String?
+
+  policyAcceptedAt DateTime
+  locale           Locale   @default(DE)
+  source           String   @default("WEB")
+
+  /// Set when the guest is seated / the visit completes.
+  seatedAt    DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+  cancelReason String?
+
+  /// Soft-lock for optimistic conflict handling on concurrent submissions.
+  version Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guests     ReservationGuest[]
+  history    ReservationHistory[]
+  statusLogs ReservationStatusLog[]
+
+  @@index([tableId, startsAt, endsAt])
+  @@index([status, startsAt])
+  @@index([startsAt])
+  @@map("reservations")
+}
+
+/// Optional per-guest detail for larger parties (names, dietary needs).
+model ReservationGuest {
+  id            String @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  name         String?
+  isChild      Boolean @default(false)
+  allergyNotes String?
+  createdAt    DateTime @default(now())
+
+  @@index([reservationId])
+  @@map("reservation_guests")
+}
+
+/// Append-only record of every human action taken on a reservation.
+model ReservationHistory {
+  id            String @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  actorId   String?
+  actor     User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName String  @default("Guest")
+
+  action      String       // CREATED | CALL_PLACED | STATUS_CHANGED | NOTE_ADDED ...
+  callOutcome CallOutcome?
+  calledAt    DateTime?
+  callbackAt  DateTime?
+  note        String?
+  reason      String?
+
+  createdAt DateTime @default(now())
+
+  @@index([reservationId, createdAt])
+  @@map("reservation_history")
+}
+
+/// Append-only status transition log. Never overwrite — always insert.
+model ReservationStatusLog {
+  id            String @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  fromStatus ReservationStatus?
+  toStatus   ReservationStatus
+
+  actorId   String?
+  actor     User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName String  @default("System")
+
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([reservationId, createdAt])
+  @@map("reservation_status_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Menu
+// ---------------------------------------------------------------------------
+
+model MenuCategory {
+  id       String @id @default(cuid())
+  slug     String @unique
+  nameDe   String
+  nameEn   String
+  nameVi   String
+  /// Lucide icon name rendered in the Smart Menu sidebar.
+  icon     String @default("Utensils")
+  sortOrder Int   @default(0)
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items      MenuItem[]
+  promotions PromotionMenuItem[]
+
+  @@map("menu_categories")
+}
+
+model Allergen {
+  id     String @id @default(cuid())
+  /// EU allergen code, e.g. "A" (gluten), "D" (fish), "G" (soy).
+  code   String @unique
+  nameDe String
+  nameEn String
+  nameVi String
+  icon   String?
+
+  items MenuItemAllergen[]
+
+  @@map("allergens")
+}
+
+model MenuItem {
+  id     String @id @default(cuid())
+  slug   String @unique
+
+  nameVi String
+  nameDe String
+  nameEn String
+
+  descriptionVi String @default("")
+  descriptionDe String @default("")
+  descriptionEn String @default("")
+
+  /// Price in euro cents to avoid float rounding.
+  priceCents Int
+
+  categoryId String
+  category   MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  image String?
+  video String?
+  /// Poster frame used while the video loads or when it fails.
+  poster String?
+
+  spicyLevel         SpicyLevel @default(NONE)
+  calories           Int?
+  preparationMinutes Int?
+  rating             Float      @default(0)
+  ratingCount        Int        @default(0)
+
+  isVegetarian Boolean @default(false)
+  isVegan      Boolean @default(false)
+  isBestseller Boolean @default(false)
+  isAvailable  Boolean @default(true)
+  isSignature  Boolean @default(false)
+
+  sortOrder Int     @default(0)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ingredients MenuItemIngredient[]
+  allergens   MenuItemAllergen[]
+  media       MenuMedia[]
+  orderItems  OrderItem[]
+  promotions  PromotionMenuItem[]
+
+  @@index([categoryId, sortOrder])
+  @@index([isSignature])
+  @@map("menu_items")
+}
+
+model MenuItemIngredient {
+  id         String @id @default(cuid())
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  nameVi String
+  nameDe String
+  nameEn String
+  /// Transparent PNG (or future GLB) used in the floating 3D ingredient layer.
+  asset  String?
+  /// Guests may remove this ingredient when ordering.
+  isRemovable Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  @@index([menuItemId])
+  @@map("menu_item_ingredients")
+}
+
+model MenuItemAllergen {
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  allergenId String
+  allergen   Allergen @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+  @@id([menuItemId, allergenId])
+  @@map("menu_item_allergens")
+}
+
+/// Extra media per dish, including 3D assets for the Smart Menu showcase.
+model MenuMedia {
+  id         String @id @default(cuid())
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  type MediaType @default(IMAGE)
+  url  String
+  alt  String?
+  /// Free-form transform hints for the 3D layer: { x, y, z, scale, delay }.
+  transform Json?
+  sortOrder Int  @default(0)
+
+  @@index([menuItemId])
+  @@map("menu_media")
+}
+
+// ---------------------------------------------------------------------------
+// Orders (takeaway / pickup)
+// ---------------------------------------------------------------------------
+
+model Order {
+  id   String @id @default(cuid())
+  code String @unique
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  guestName  String
+  guestPhone String
+  guestEmail String?
+
+  type   OrderType   @default(PICKUP)
+  status OrderStatus @default(NEW)
+
+  /// Requested pickup time (UTC).
+  pickupAt DateTime
+
+  subtotalCents Int @default(0)
+  discountCents Int @default(0)
+  totalCents    Int @default(0)
+
+  paymentMethod PaymentMethod @default(PAY_AT_RESTAURANT)
+  paymentStatus PaymentStatus @default(UNPAID)
+
+  promotionId String?
+  promotion   Promotion? @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+
+  notes  String?
+  locale Locale @default(DE)
+
+  confirmedAt DateTime?
+  readyAt     DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+  cancelReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items OrderItem[]
+
+  @@index([status, createdAt])
+  @@index([pickupAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  menuItemId String?
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+
+  /// Snapshot so the receipt stays correct if the dish is later renamed.
+  nameSnapshot      String
+  unitPriceCents    Int
+  quantity          Int    @default(1)
+  lineTotalCents    Int
+  notes             String?
+
+  options OrderItemOption[]
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model OrderItemOption {
+  id          String @id @default(cuid())
+  orderItemId String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  /// ADD_TOPPING | REMOVE_INGREDIENT
+  kind       String
+  label      String
+  priceCents Int @default(0)
+
+  @@index([orderItemId])
+  @@map("order_item_options")
+}
+
+// ---------------------------------------------------------------------------
+// Promotions
+// ---------------------------------------------------------------------------
+
+model Promotion {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  titleDe String
+  titleEn String
+  titleVi String
+
+  subtitleDe String @default("")
+  subtitleEn String @default("")
+  subtitleVi String @default("")
+
+  descriptionDe String @default("")
+  descriptionEn String @default("")
+  descriptionVi String @default("")
+
+  /// Either a percentage discount or a fixed combo price — not both.
+  discountPercent Int?
+  comboPriceCents Int?
+
+  conditionsDe String @default("")
+  conditionsEn String @default("")
+  conditionsVi String @default("")
+
+  image String?
+
+  /// CTA target: RESERVATION | ORDER | MENU | CONTACT
+  ctaType String @default("RESERVATION")
+  ctaLabelDe String @default("Jetzt reservieren")
+  ctaLabelEn String @default("Reserve now")
+  ctaLabelVi String @default("Đặt bàn ngay")
+
+  startsAt DateTime
+  endsAt   DateTime
+
+  /// Optional weekday restriction, 0=Sunday … 6=Saturday.
+  weekdays  Int[]  @default([])
+  startTime String?
+  endTime   String?
+
+  isActive  Boolean   @default(true)
+  sortOrder Int       @default(0)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  menuItems PromotionMenuItem[]
+  orders    Order[]
+
+  @@index([isActive, startsAt, endsAt])
+  @@map("promotions")
+}
+
+/// Links a promotion to specific dishes and/or whole categories.
+model PromotionMenuItem {
+  id          String @id @default(cuid())
+  promotionId String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+
+  menuItemId String?
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  categoryId String?
+  category   MenuCategory? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([promotionId, menuItemId, categoryId])
+  @@index([promotionId])
+  @@map("promotion_menu_items")
+}
+
+// ---------------------------------------------------------------------------
+// Gallery & content
+// ---------------------------------------------------------------------------
+
+model GalleryItem {
+  id       String @id @default(cuid())
+  category GalleryCategory @default(RESTAURANT)
+  type     MediaType       @default(IMAGE)
+
+  url    String
+  poster String?
+
+  titleDe String @default("")
+  titleEn String @default("")
+  titleVi String @default("")
+
+  captionDe String @default("")
+  captionEn String @default("")
+  captionVi String @default("")
+
+  altText String @default("")
+
+  width  Int?
+  height Int?
+
+  isVisible Boolean @default(true)
+  isFeatured Boolean @default(false)
+  sortOrder Int     @default(0)
+  deletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category, sortOrder])
+  @@map("gallery_items")
+}
+
+/// Key/value store for editable site content (hero, about, socials, map…).
+model RestaurantSetting {
+  key       String   @id
+  value     Json
+  group     String   @default("general")
+  updatedAt DateTime @updatedAt
+
+  @@index([group])
+  @@map("restaurant_settings")
+}
+
+model OpeningHour {
+  id        String  @id @default(cuid())
+  /// 0 = Sunday … 6 = Saturday
+  weekday   Int     @unique
+  isClosed  Boolean @default(false)
+  opensAt   String? // "11:00"
+  closesAt  String? // "23:00"
+  note      String?
+  updatedAt DateTime @updatedAt
+
+  @@map("opening_hours")
+}
+
+model NewsletterSubscriber {
+  id     String @id @default(cuid())
+  email  String @unique
+  locale Locale @default(DE)
+
+  consentAt        DateTime
+  consentIpHash    String?
+  unsubscribeToken String   @unique
+  unsubscribedAt   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@map("newsletter_subscribers")
+}
+
+// ---------------------------------------------------------------------------
+// AI assistant
+// ---------------------------------------------------------------------------
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  /// Anonymous browser-scoped id; never tied to a logged-in identity.
+  visitorId String?
+  locale    Locale   @default(DE)
+  provider  String   @default("demo")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@index([visitorId])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String @id @default(cuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  role    ChatRole
+  content String
+  /// Structured tool results (menu lookups, promotion lookups) for traceability.
+  meta    Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
+}
+
+// ---------------------------------------------------------------------------
+// Ops
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id   String @id @default(cuid())
+  type NotificationType
+
+  title   String
+  body    String
+  /// Deep link into the admin area, e.g. "/admin/reservations/<id>".
+  link    String?
+  meta    Json?
+
+  /// Null = broadcast to every admin user.
+  recipientId String?
+  recipient   User?   @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([recipientId, readAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  actorId   String?
+  actor     User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorName String  @default("System")
+
+  action   String // e.g. "reservation.confirm"
+  entity   String // e.g. "Reservation"
+  entityId String?
+
+  before Json?
+  after  Json?
+
+  ip        String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
