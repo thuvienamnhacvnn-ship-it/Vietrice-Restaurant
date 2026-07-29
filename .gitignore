@@ -42,3 +42,7 @@ yarn-error.log*
 /.claude
 .idea
 .vscode
+
+# large media — ship via CDN/blob storage, not the repo
+/public/videos/*
+!/public/videos/.gitkeep

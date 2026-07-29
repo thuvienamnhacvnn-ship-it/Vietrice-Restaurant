@@ -53,7 +53,7 @@ export const signatureDishes: SignatureDish[] = [
     priceCents: 1490,
     thumbnail: '/images/dishes/pho-bo-dac-biet.jpg',
     poster: '/images/hero/hero-pho-bo.jpg',
-    video: null,
+    video: '/videos/pho-bo-dac-biet.mp4',
     category: 'pho-suppen',
     isBestseller: true,
     isVegetarian: false,
