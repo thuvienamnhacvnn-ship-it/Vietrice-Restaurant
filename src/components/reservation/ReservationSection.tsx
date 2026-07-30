@@ -55,6 +55,9 @@ const COPY: Record<
     seats: string
     tooSmall: string
     noneFree: string
+    summaryTitle: string
+    /** Uses {n} and {p} placeholders for table count and party size. */
+    fitting: string
     trust: { title: string; body: string }[]
   }
 > = {
@@ -87,6 +90,8 @@ const COPY: Record<
     seats: 'Plätze',
     tooSmall: 'zu klein',
     noneFree: 'Für diese Zeit ist kein passender Tisch frei. Bitte wählen Sie eine andere Uhrzeit.',
+    summaryTitle: 'Verfügbarkeit zu dieser Zeit',
+    fitting: '{n} Tische passen für {p} Personen.',
     trust: [
       { title: 'Sicher & einfach', body: 'Ihre Daten sind sicher. Reservierung in wenigen Klicks.' },
       { title: 'Sofort Bestätigung', body: 'Wir rufen Sie zur Bestätigung an.' },
@@ -123,6 +128,8 @@ const COPY: Record<
     seats: 'seats',
     tooSmall: 'too small',
     noneFree: 'No suitable table is free at this time. Please choose another slot.',
+    summaryTitle: 'Availability at this time',
+    fitting: '{n} tables fit a party of {p}.',
     trust: [
       { title: 'Safe & simple', body: 'Your data is secure. Book in just a few clicks.' },
       { title: 'Fast confirmation', body: 'We call you to confirm your booking.' },
@@ -159,6 +166,8 @@ const COPY: Record<
     seats: 'chỗ',
     tooSmall: 'quá nhỏ',
     noneFree: 'Không có bàn phù hợp vào giờ này. Vui lòng chọn giờ khác.',
+    summaryTitle: 'Tình trạng bàn giờ này',
+    fitting: '{n} bàn phù hợp cho {p} người.',
     trust: [
       { title: 'An toàn & dễ dàng', body: 'Dữ liệu của bạn được bảo mật. Đặt bàn chỉ vài cú nhấp.' },
       { title: 'Xác nhận nhanh', body: 'Chúng tôi sẽ gọi điện để xác nhận.' },
@@ -215,6 +224,12 @@ export function ReservationSection({
 
   const anySelectable = tables.some((tb) => isSelectable(tb, partySize))
 
+  /** Live counts for the slot summary card under the filter panel. */
+  const freeTables = tables.filter((tb) => tb.status === 'AVAILABLE')
+  const busyTables = tables.filter((tb) => tb.status === 'OCCUPIED')
+  const freeSeats = freeTables.reduce((sum, tb) => sum + tb.capacity, 0)
+  const fitting = freeTables.filter((tb) => partySize <= tb.capacity).length
+
   /** Re-query the floor plan for the chosen slot. */
   const refresh = async () => {
     setLoading(true)
@@ -259,11 +274,11 @@ export function ReservationSection({
               {copy.chooseTable}
             </p>
 
-            <div className="card-lux space-y-4 p-4">
+            <div className="card-lux space-y-2.5 p-3.5">
               <div>
                 <label
                   htmlFor="res-date"
-                  className="mb-1.5 block text-[11.5px] font-semibold uppercase tracking-luxe text-gold/85"
+                  className="mb-1 block text-[11px] font-semibold uppercase tracking-luxe text-gold/85"
                 >
                   {copy.stepDate}
                 </label>
@@ -287,7 +302,7 @@ export function ReservationSection({
               <div>
                 <label
                   htmlFor="res-time"
-                  className="mb-1.5 block text-[11.5px] font-semibold uppercase tracking-luxe text-gold/85"
+                  className="mb-1 block text-[11px] font-semibold uppercase tracking-luxe text-gold/85"
                 >
                   {copy.stepTime}
                 </label>
@@ -314,7 +329,7 @@ export function ReservationSection({
               <div>
                 <label
                   htmlFor="res-party"
-                  className="mb-1.5 block text-[11.5px] font-semibold uppercase tracking-luxe text-gold/85"
+                  className="mb-1 block text-[11px] font-semibold uppercase tracking-luxe text-gold/85"
                 >
                   {copy.stepGuests}
                 </label>
@@ -343,25 +358,71 @@ export function ReservationSection({
               <div>
                 <label
                   htmlFor="res-wishes"
-                  className="mb-1.5 block text-[11.5px] font-semibold uppercase tracking-luxe text-gold/85"
+                  className="mb-1 block text-[11px] font-semibold uppercase tracking-luxe text-gold/85"
                 >
                   {copy.stepWishes}
                 </label>
                 <textarea
                   id="res-wishes"
-                  rows={4}
+                  rows={2}
                   maxLength={200}
                   value={wishes}
                   onChange={(e) => setWishes(e.target.value)}
                   placeholder={copy.wishesPlaceholder}
                   className="w-full resize-none rounded-lg border border-gold/25 bg-black/40 p-3 text-[13px] text-cream placeholder:text-muted/70 focus:border-gold focus:outline-none"
                 />
-                <p className="mt-1 text-right text-[11px] text-muted">{wishes.length}/200</p>
+                <p className="mt-0.5 text-right text-[10.5px] text-muted">{wishes.length}/200</p>
               </div>
 
               <Button size="lg" className="w-full" onClick={refresh} disabled={loading}>
                 {loading ? t.common.loading : copy.findTable}
               </Button>
+            </div>
+
+            {/* Availability at a glance for the chosen slot. Fills the dead
+                space under the filter panel with something the guest can act
+                on, and makes the left column reach the same depth as the map
+                and the summary beside it. */}
+            <div className="card-lux mt-3 flex-1 p-3.5">
+              <h3 className="text-[11px] font-semibold uppercase tracking-luxe text-gold/85">
+                {copy.summaryTitle}
+              </h3>
+
+              <dl className="mt-2.5 grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border border-success/30 bg-success/[0.07] px-1 py-2">
+                  <dt className="text-[10px] uppercase tracking-wide text-muted">
+                    {copy.legendAvailable}
+                  </dt>
+                  <dd className="mt-0.5 font-display text-2xl leading-none text-success">
+                    {freeTables.length}
+                  </dd>
+                </div>
+                <div className="rounded-lg border border-danger/30 bg-danger/[0.07] px-1 py-2">
+                  <dt className="text-[10px] uppercase tracking-wide text-muted">
+                    {copy.legendOccupied}
+                  </dt>
+                  <dd className="mt-0.5 font-display text-2xl leading-none text-danger">
+                    {busyTables.length}
+                  </dd>
+                </div>
+                <div className="rounded-lg border border-gold/30 bg-gold/[0.07] px-1 py-2">
+                  <dt className="text-[10px] uppercase tracking-wide text-muted">
+                    {copy.seats}
+                  </dt>
+                  <dd className="mt-0.5 font-display text-2xl leading-none text-gold-light">
+                    {freeSeats}
+                  </dd>
+                </div>
+              </dl>
+
+              <p className="mt-2.5 flex items-start gap-2 text-[12px] leading-snug text-muted">
+                <Users className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold" aria-hidden />
+                <span>
+                  {fitting > 0
+                    ? copy.fitting.replace('{n}', String(fitting)).replace('{p}', String(partySize))
+                    : copy.noneFree}
+                </span>
+              </p>
             </div>
           </div>
 
