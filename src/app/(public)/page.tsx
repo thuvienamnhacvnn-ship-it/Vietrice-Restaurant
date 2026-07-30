@@ -1,6 +1,5 @@
 import { allergens } from '@/content/menu'
 import { getMenuData, getPublicGallery, getPublicPromotions } from '@/server/catalogue'
-import { signatureDishes } from '@/content/signature-dishes'
 import { getLocale } from '@/i18n'
 import { nextExpiring } from '@/lib/promotions'
 import { combineDateTime, getDemoTableViews, toDateInput } from '@/lib/reservation'
@@ -29,6 +28,12 @@ export default async function HomePage() {
     await Promise.all([getMenuData(), getPublicGallery(), getPublicPromotions(locale, now)])
   const soonest = nextExpiring(promotions)
 
+  // The hero used to import the seed module directly, so a video, poster or
+  // price changed in Admin never reached the banner — the same gap that made
+  // the menu and gallery pages ignore the database. `isSignature` is the
+  // manager-controlled flag behind the eight-dish strip.
+  const heroDishes = menuItems.filter((d) => d.isSignature)
+
   const date = toDateInput(now)
   const time = '19:00'
   const tables = getDemoTableViews(combineDateTime(date, time), now)
@@ -42,7 +47,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroDishShowcase dishes={signatureDishes} />
+      <HeroDishShowcase dishes={heroDishes} />
 
       <ReservationSection
         initialTables={tables}
