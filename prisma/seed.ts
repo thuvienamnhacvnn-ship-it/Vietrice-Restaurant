@@ -9,6 +9,9 @@
  *
  * Run with: npm run db:seed
  */
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { PrismaClient, type Prisma } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
@@ -19,6 +22,26 @@ import { openingHours, reviewSummary, venueStats } from '../src/content/restaura
 import { restaurantTables } from '../src/content/tables'
 
 const prisma = new PrismaClient()
+
+/** Extensions the hero player understands, best first. */
+const VIDEO_EXTENSIONS = ['.webm', '.mp4']
+
+/**
+ * Find a dish's background clip by filename convention.
+ *
+ * Drop `public/videos/<slug>.mp4` (or `.webm`) in place and re-seed — no code
+ * change needed to add another one. A clip named after a dish that no longer
+ * exists is simply never looked up, and a dish with no clip keeps its poster
+ * image, which is what the hero falls back to anyway.
+ */
+function findVideo(slug: string): string | null {
+  for (const ext of VIDEO_EXTENSIONS) {
+    if (existsSync(join(process.cwd(), 'public', 'videos', `${slug}${ext}`))) {
+      return `/videos/${slug}${ext}`
+    }
+  }
+  return null
+}
 
 async function seedAdmin() {
   const email = process.env.SEED_ADMIN_EMAIL
@@ -100,7 +123,7 @@ async function seedMenu() {
       categoryId: category.id,
       image: item.thumbnail,
       poster: item.poster,
-      video: item.video,
+      video: findVideo(item.slug) ?? item.video,
       spicyLevel: item.spicyLevel,
       calories: item.calories,
       preparationMinutes: item.preparationMinutes,

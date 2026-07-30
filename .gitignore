@@ -43,6 +43,17 @@ yarn-error.log*
 .idea
 .vscode
 
-# large media — ship via CDN/blob storage, not the repo
-/public/videos/*
-!/public/videos/.gitkeep
+# Dish videos DO ship in the repo.
+#
+# They were excluded here originally, which meant the hero video played on a
+# developer's machine and silently fell back to a still image on Vercel — the
+# file simply was not in the deployment. A background loop that only works
+# locally is worse than no video at all, because nobody notices it is broken.
+#
+# Keep each clip small: they are muted, looping, decorative backgrounds, not
+# films. Aim for under 3 MB (see README for the ffmpeg command). GitHub warns
+# above 50 MB per file and refuses above 100 MB; if the collection outgrows
+# that, move to Vercel Blob and store the URLs on MenuItem.video instead.
+/public/videos/*.mov
+/public/videos/*.avi
+/public/videos/*.mkv

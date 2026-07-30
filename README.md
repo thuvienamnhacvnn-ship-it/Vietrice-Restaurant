@@ -88,8 +88,35 @@ SOURCE_DIR="D:\path\to\mockups" npm run assets
 **Known limitation:** only Phở Bò exists at full resolution in the mockups. The
 other seven hero backdrops are upscaled, deliberately softened derivatives of
 their ~191×128 carousel thumbnails. Replace `MenuItem.poster` via Admin once
-real photography exists. No dish videos were supplied either — `MenuItem.video`
-is null and `VideoBackground` falls back to the poster image.
+real photography exists.
+
+## Hero videos
+
+Dish clips live in `public/videos/<dish-slug>.mp4` and **are committed to the
+repo**. They were gitignored at first, which meant the hero video played
+locally and silently fell back to a still image on Vercel — the file was never
+in the deployment.
+
+To add one:
+
+```bash
+npm run video -- "E:/Works/DX media/V2.mp4" bun-bo-hue
+npm run db:seed
+```
+
+The first command re-encodes to a web-ready loop; the second registers it. The
+seed finds clips by filename, so the slug must match the dish exactly and no
+code change is needed. A dish without a clip keeps its poster image.
+
+The re-encode matters: source files carry an audio track the player never
+unmutes and a bitrate meant for full-screen viewing. It strips the audio, caps
+the bitrate and moves the MP4 index to the front so playback starts before the
+download finishes. The supplied Phở Bò clip went from 4.6 MB to 1.5 MB.
+
+Keep clips short and under ~3 MB. GitHub warns above 50 MB per file and refuses
+above 100 MB; if the collection outgrows the repo, move to Vercel Blob and put
+the URLs on `MenuItem.video` instead — nothing else has to change, the field
+already accepts an absolute URL.
 
 ## Architecture notes
 
