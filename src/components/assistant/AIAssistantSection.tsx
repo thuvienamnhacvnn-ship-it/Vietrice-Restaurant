@@ -55,14 +55,16 @@ export function AIAssistantSection({
       <Container
         wide
         className={cn(
-          'relative flex flex-col justify-center py-10 lg:py-6',
+          'relative flex flex-col justify-center overflow-hidden py-10 lg:py-6',
           withFooter ? 'min-h-0 flex-1' : 'h-full py-14 lg:py-8',
         )}
       >
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:gap-12">
           {/* ---- Left: intro + chef ---- */}
           <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-            <div>
+            {/* Capped from xl so the copy and its cards stop short of the chef
+                standing to their right, rather than running underneath him. */}
+            <div className="xl:max-w-[600px] 2xl:max-w-[680px]">
               <p className="eyebrow">{t.assistant.title}</p>
               <h1
                 id="assistant-heading"
@@ -98,21 +100,15 @@ export function AIAssistantSection({
               </ul>
             </div>
 
-            {/* Chef portrait — supplied as a cut-out PNG, so it stands free of
-                the backdrop instead of sitting in a photographic box. */}
-            <div className="relative mx-auto w-[190px] shrink-0 self-end sm:w-[230px] lg:w-[260px] xl:w-[290px]">
-              {/* Warm floor glow behind the figure */}
-              <div
-                aria-hidden
-                className="absolute inset-x-0 bottom-0 h-[45%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(216,174,99,0.22),transparent_70%)] blur-md"
-              />
+            {/* Below xl the chef sits inline beside the copy. From xl it is
+                re-anchored to the footer line — see the absolute copy below. */}
+            <div className="relative mx-auto w-[190px] shrink-0 self-end sm:w-[230px] xl:hidden">
               <Image
                 src="/images/assistant/ai-chef.png"
                 alt=""
                 aria-hidden
                 width={473}
                 height={682}
-                priority
                 className="relative h-auto w-full drop-shadow-[0_24px_46px_rgba(0,0,0,0.85)]"
               />
             </div>
@@ -121,6 +117,25 @@ export function AIAssistantSection({
           {/* ---- Right: chat ---- */}
           <AIChatPanel
             className={cn('w-full', withFooter ? 'h-[430px] lg:h-[470px]' : 'h-[560px] lg:h-[600px]')}
+          />
+        </div>
+
+        {/* Chef standing on the footer line, exactly as in the reference: his
+            base meets the footer's top border and the container clips whatever
+            falls below it, so he reads as standing behind the footer rather
+            than floating above it. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 right-[440px] hidden w-[330px] xl:block 2xl:right-[470px] 2xl:w-[380px]"
+        >
+          <span className="absolute inset-x-0 bottom-0 block h-[38%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(216,174,99,0.20),transparent_70%)] blur-md" />
+          <Image
+            src="/images/assistant/ai-chef.png"
+            alt=""
+            width={473}
+            height={682}
+            priority
+            className="relative h-auto w-full drop-shadow-[0_24px_46px_rgba(0,0,0,0.85)]"
           />
         </div>
       </Container>

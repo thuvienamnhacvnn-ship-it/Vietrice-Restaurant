@@ -20,7 +20,9 @@ import { SocialRail } from './SocialRail'
 export function PublicShell({ children }: { children: React.ReactNode }) {
   const t = useT()
   const pathname = usePathname()
-  const footerIsInPage = pathname === '/'
+  // Both the home page and the assistant page fuse the footer into their final
+  // 16:9 section (mockup 6), so the shell must not add a second one.
+  const footerIsInPage = pathname === '/' || pathname === '/ai-assistant'
 
   return (
     <>
