@@ -15,6 +15,9 @@ import { AIChatPanel } from './AIChatPanel'
  * a circular half-body chef portrait above a compact gold-bordered card.
  * Clicking it opens the chat panel in place.
  */
+/** Pointer travel, in px, before a press counts as a drag rather than a click. */
+const DRAG_THRESHOLD = 5
+
 export function AIChefLauncher() {
   const t = useT()
   const pathname = usePathname()
@@ -23,53 +26,68 @@ export function AIChefLauncher() {
   const [overHero, setOverHero] = useState(false)
 
   /**
-   * Right-button drag. `offset` is a delta from the launcher's docked corner
-   * position, so the default placement still follows the hero/scroll rules
-   * above until the guest actually moves it.
+   * Left-button drag. `offset` is a delta from the launcher's docked corner, so
+   * the default placement still follows the hero/scroll rules until the guest
+   * actually moves it.
+   *
+   * The same button also opens the chat, so a press only becomes a drag once
+   * the pointer has travelled past DRAG_THRESHOLD. Below that it is treated as
+   * a click and the panel opens — otherwise every slightly shaky click would
+   * nudge the chef instead of talking to him.
    */
   const [offset, setOffset] = useState<{ x: number; y: number } | null>(null)
   const [dragging, setDragging] = useState(false)
-  const dragRef = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(
-    null,
-  )
+  const dragRef = useRef<{
+    startX: number
+    startY: number
+    baseX: number
+    baseY: number
+    moved: boolean
+  } | null>(null)
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
-      // Right button only — left click still opens the chat.
-      if (e.button !== 2) return
-      e.preventDefault()
+      if (e.button !== 0) return
       dragRef.current = {
         startX: e.clientX,
         startY: e.clientY,
         baseX: offset?.x ?? 0,
         baseY: offset?.y ?? 0,
+        moved: false,
       }
-      setDragging(true)
       ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
     },
     [offset],
   )
 
-  const onPointerMove = useCallback(
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    const d = dragRef.current
+    if (!d) return
+    const dx = e.clientX - d.startX
+    const dy = e.clientY - d.startY
+
+    if (!d.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return
+    if (!d.moved) {
+      d.moved = true
+      setDragging(true)
+    }
+    setOffset({ x: d.baseX + dx, y: d.baseY + dy })
+  }, [])
+
+  const endDrag = useCallback(
     (e: React.PointerEvent) => {
       const d = dragRef.current
       if (!d) return
-      setOffset({
-        x: d.baseX + (e.clientX - d.startX),
-        y: d.baseY + (e.clientY - d.startY),
-      })
+      dragRef.current = null
+      setDragging(false)
+      if ((e.currentTarget as HTMLElement).hasPointerCapture?.(e.pointerId)) {
+        ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
+      }
+      // A press that never became a drag is a plain click: open the chat.
+      if (!d.moved && e.type === 'pointerup') setOpen(true)
     },
     [],
   )
-
-  const endDrag = useCallback((e: React.PointerEvent) => {
-    if (!dragRef.current) return
-    dragRef.current = null
-    setDragging(false)
-    if ((e.currentTarget as HTMLElement).hasPointerCapture?.(e.pointerId)) {
-      ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
-    }
-  }, [])
 
   // Keep the launcher on screen if the window is resized after a drag.
   useEffect(() => {
@@ -111,13 +129,11 @@ export function AIChefLauncher() {
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
-      // Suppress the browser menu so the right button is free for dragging.
-      onContextMenu={(e) => e.preventDefault()}
       className={cn(
         'fixed right-2 z-40 flex flex-col items-end sm:right-4',
         !offset && 'transition-[bottom] duration-500',
         overHero && !offset ? 'bottom-[292px] short:bottom-[262px]' : 'bottom-3 sm:bottom-4',
-        dragging && 'cursor-grabbing select-none',
+        dragging ? 'cursor-grabbing select-none' : 'cursor-grab',
       )}
       style={offset ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
       title={t.assistant.title}
@@ -143,7 +159,9 @@ export function AIChefLauncher() {
       {!open && (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          // Opening is driven by pointerup on the wrapper, which can tell a
+          // click apart from a drag. An onClick here would also fire at the end
+          // of a drag and pop the panel open every time the chef was moved.
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           aria-label={`${t.assistant.title} — ${t.assistant.chatNow}`}
