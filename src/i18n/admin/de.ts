@@ -138,6 +138,11 @@ export const de = {
     bestseller: 'Bestseller',
     priceHint: 'Preis in Euro, z. B. 14,90',
     priceSaved: 'Preis gespeichert',
+    addVideo: 'Video',
+    replaceVideo: 'Video ersetzen',
+    removeVideo: 'Video entfernen',
+    uploadingVideo: 'Video wird geladen…',
+    uploadingPoster: 'Standbild wird geladen…',
     empty: 'Keine Gerichte in dieser Kategorie.',
   },
   tables: {

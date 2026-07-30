@@ -6,6 +6,14 @@ import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
+const blobUrl = z
+  .string()
+  .max(500)
+  .refine(
+    (v) => v.startsWith('/') || /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//.test(v),
+    'Must be a site-relative path or a Vercel Blob URL.',
+  )
+
 const schema = z.object({
   itemId: z.string().min(1),
   isAvailable: z.boolean().optional(),
@@ -13,6 +21,14 @@ const schema = z.object({
   isBestseller: z.boolean().optional(),
   /** Euro cents. Capped so a slipped decimal cannot list a dish at €10,000. */
   priceCents: z.number().int().min(0).max(1_000_00).optional(),
+  /**
+   * Media URLs, written after a Vercel Blob upload. Restricted to the Blob
+   * host or a site-relative path: an arbitrary URL here would let anyone with
+   * a session point the restaurant's banner at a third-party server.
+   */
+  video: blobUrl.nullable().optional(),
+  poster: blobUrl.optional(),
+  image: blobUrl.optional(),
 })
 
 /**
@@ -56,6 +72,8 @@ export async function POST(request: Request) {
           isSignature: current.isSignature,
           isBestseller: current.isBestseller,
           priceCents: current.priceCents,
+          video: current.video,
+          poster: current.poster,
         },
         after: changes,
       },
@@ -70,5 +88,7 @@ export async function POST(request: Request) {
     isSignature: updated.isSignature,
     isBestseller: updated.isBestseller,
     priceCents: updated.priceCents,
+    video: updated.video,
+    poster: updated.poster,
   })
 }

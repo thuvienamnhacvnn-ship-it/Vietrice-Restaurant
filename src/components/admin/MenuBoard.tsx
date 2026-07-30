@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Check } from 'lucide-react'
 
@@ -8,6 +9,7 @@ import { fill } from '@/i18n/admin'
 import { cn } from '@/lib/utils'
 import { useAdminI18n } from '@/components/admin/AdminI18n'
 import { useAdminAction } from '@/components/admin/useAdminAction'
+import { DishVideoUpload } from '@/components/admin/DishVideoUpload'
 import {
   BoardHeader,
   Busy,
@@ -28,6 +30,7 @@ export type AdminDish = {
   isAvailable: boolean
   isSignature: boolean
   isBestseller: boolean
+  hasVideo: boolean
 }
 
 export function MenuBoard({
@@ -38,6 +41,7 @@ export function MenuBoard({
   categories: { slug: string; name: string }[]
 }) {
   const { t, intl } = useAdminI18n()
+  const router = useRouter()
   const { run, busyId, error, refreshing } = useAdminAction('/api/admin/menu')
   const [category, setCategory] = useState('ALL')
   const [query, setQuery] = useState('')
@@ -80,7 +84,14 @@ export function MenuBoard({
       ) : (
         <ul className="mt-5 grid gap-2.5 lg:grid-cols-2 2xl:grid-cols-3">
           {visible.map((d) => (
-            <DishRow key={d.id} dish={d} busy={busyId === d.id} intl={intl} run={run} />
+            <DishRow
+              key={d.id}
+              dish={d}
+              busy={busyId === d.id}
+              intl={intl}
+              run={run}
+              onSaved={() => router.refresh()}
+            />
           ))}
         </ul>
       )}
@@ -95,11 +106,13 @@ function DishRow({
   busy,
   intl,
   run,
+  onSaved,
 }: {
   dish: AdminDish
   busy: boolean
   intl: string
   run: (id: string, body: unknown) => Promise<boolean>
+  onSaved: () => void
 }) {
   const { t } = useAdminI18n()
   // Prices are edited as euros because that is what is on the printed menu;
@@ -207,6 +220,15 @@ function DishRow({
           </button>
 
           <Busy show={busy} />
+        </div>
+
+        <div className="mt-1.5">
+          <DishVideoUpload
+            itemId={dish.id}
+            slug={dish.slug}
+            hasVideo={dish.hasVideo}
+            onSaved={onSaved}
+          />
         </div>
       </div>
 

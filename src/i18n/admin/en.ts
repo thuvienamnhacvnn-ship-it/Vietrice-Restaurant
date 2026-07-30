@@ -133,6 +133,11 @@ export const en: AdminDictionary = {
     bestseller: 'Bestseller',
     priceHint: 'Price in euros, e.g. 14.90',
     priceSaved: 'Price saved',
+    addVideo: 'Video',
+    replaceVideo: 'Replace video',
+    removeVideo: 'Remove video',
+    uploadingVideo: 'Uploading video…',
+    uploadingPoster: 'Uploading still…',
     empty: 'No dishes in this category.',
   },
   tables: {

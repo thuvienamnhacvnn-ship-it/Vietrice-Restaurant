@@ -113,10 +113,34 @@ unmutes and a bitrate meant for full-screen viewing. It strips the audio, caps
 the bitrate and moves the MP4 index to the front so playback starts before the
 download finishes. The supplied Phở Bò clip went from 4.6 MB to 1.5 MB.
 
-Keep clips short and under ~3 MB. GitHub warns above 50 MB per file and refuses
-above 100 MB; if the collection outgrows the repo, move to Vercel Blob and put
-the URLs on `MenuItem.video` instead — nothing else has to change, the field
-already accepts an absolute URL.
+Keep clips short and under ~3 MB.
+
+**The poster is cut from the video, not supplied separately.** Both the 1600×900
+banner still and the 382×256 carousel thumbnail are frames of the clip, so the
+banner does not visibly jump the moment the video finishes buffering and the
+thumbnail shows the same shot that then animates.
+
+### Uploading from Admin instead
+
+Admin → Speisekarte has a video button on every dish, which uploads to Vercel
+Blob and stores the URL on `MenuItem`. Set `BLOB_READ_WRITE_TOKEN` (Vercel
+dashboard → Storage → Blob) for it to work; Vercel injects it into deployments,
+copy it into `.env` to test locally.
+
+Two details worth knowing:
+
+- The file never passes through the app. Vercel caps a serverless request body
+  at 4.5 MB, which a video clears easily, so the browser uploads straight to
+  Blob using a short-lived token this app issues only to a signed-in admin.
+- The poster frame is captured **in the browser**, since Vercel has no ffmpeg.
+- Re-seeding will not overwrite media uploaded this way: the seed leaves an
+  absolute URL alone and only fills in from `public/` when the field holds a
+  local path.
+
+Note that **YouTube is not an option** for these clips. A YouTube link is a page
+or an iframe embed, not a file URL, so it cannot go in a `<video>` element; the
+embed brings its own branding and controls, and it sets tracking cookies, which
+on a German site means a consent banner and a rewrite of the cookie policy.
 
 ## Architecture notes
 

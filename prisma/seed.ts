@@ -26,6 +26,26 @@ const prisma = new PrismaClient()
 /** Extensions the hero player understands, best first. */
 const VIDEO_EXTENSIONS = ['.webm', '.mp4']
 
+function publicFile(...parts: string[]): string | null {
+  const rel = parts.join('/')
+  return existsSync(join(process.cwd(), 'public', ...parts)) ? `/${rel}` : null
+}
+
+/**
+ * Poster cut from the dish video by `npm run video`, if one exists.
+ *
+ * Preferred over the content module's poster so the still frame and the moving
+ * image are the same shot — otherwise the banner visibly jumps the moment the
+ * video finishes buffering.
+ */
+function findPoster(slug: string): string | null {
+  return publicFile('images', 'hero', 'dishes', `${slug}.jpg`)
+}
+
+function findThumbnail(slug: string): string | null {
+  return publicFile('images', 'dishes', `${slug}.jpg`)
+}
+
 /**
  * Find a dish's background clip by filename convention.
  *
@@ -36,9 +56,8 @@ const VIDEO_EXTENSIONS = ['.webm', '.mp4']
  */
 function findVideo(slug: string): string | null {
   for (const ext of VIDEO_EXTENSIONS) {
-    if (existsSync(join(process.cwd(), 'public', 'videos', `${slug}${ext}`))) {
-      return `/videos/${slug}${ext}`
-    }
+    const found = publicFile('videos', `${slug}${ext}`)
+    if (found) return found
   }
   return null
 }
@@ -121,8 +140,8 @@ async function seedMenu() {
       descriptionEn: item.descriptionEn,
       priceCents: item.priceCents,
       categoryId: category.id,
-      image: item.thumbnail,
-      poster: item.poster,
+      image: findThumbnail(item.slug) ?? item.thumbnail,
+      poster: findPoster(item.slug) ?? item.poster,
       video: findVideo(item.slug) ?? item.video,
       spicyLevel: item.spicyLevel,
       calories: item.calories,
@@ -136,9 +155,27 @@ async function seedMenu() {
       sortOrder: item.sortOrder,
     }
 
+    // Media uploaded through Admin (Vercel Blob URLs) lives only in the
+    // database — there is no file on disk for the helpers above to find. Re-
+    // seeding must not silently replace a manager's upload with the shipped
+    // placeholder, so an absolute URL already stored is left alone.
+    const existing = await prisma.menuItem.findUnique({
+      where: { slug: item.slug },
+      select: { video: true, poster: true, image: true },
+    })
+    const keepIfRemote = (current: string | null | undefined, next: string | null) =>
+      current && /^https?:\/\//.test(current) ? current : next
+
+    const update = {
+      ...data,
+      video: keepIfRemote(existing?.video, data.video),
+      poster: keepIfRemote(existing?.poster, data.poster),
+      image: keepIfRemote(existing?.image, data.image),
+    }
+
     const saved = await prisma.menuItem.upsert({
       where: { slug: item.slug },
-      update: data,
+      update,
       create: { slug: item.slug, ...data },
     })
 

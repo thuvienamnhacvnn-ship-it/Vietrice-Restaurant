@@ -133,6 +133,11 @@ export const vi: AdminDictionary = {
     bestseller: 'Bán chạy',
     priceHint: 'Giá tính bằng Euro, ví dụ 14,90',
     priceSaved: 'Đã lưu giá',
+    addVideo: 'Video',
+    replaceVideo: 'Đổi video',
+    removeVideo: 'Xoá video',
+    uploadingVideo: 'Đang tải video…',
+    uploadingPoster: 'Đang tải ảnh nền…',
     empty: 'Danh mục này chưa có món nào.',
   },
   tables: {

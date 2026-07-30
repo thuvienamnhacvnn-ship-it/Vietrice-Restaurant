@@ -44,6 +44,7 @@ export default async function AdminMenuPage() {
           isAvailable: i.isAvailable,
           isSignature: i.isSignature,
           isBestseller: i.isBestseller,
+          hasVideo: Boolean(i.video),
         }))}
       />
     </AdminShell>
