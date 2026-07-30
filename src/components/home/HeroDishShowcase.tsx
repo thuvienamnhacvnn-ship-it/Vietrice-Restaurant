@@ -2,14 +2,14 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, CalendarDays, Pause, Play, Volume2, VolumeX } from 'lucide-react'
+import { BookOpen, CalendarDays, ChevronUp, Pause, Play, Volume2, VolumeX } from 'lucide-react'
 
 import type { SignatureDish } from '@/content/signature-dishes'
 import type { Locale } from '@/i18n/config'
 import { useI18n } from '@/i18n/provider'
 import { localizedDescription, localizedName, localizedSubtitle } from '@/lib/dish'
-import { formatPrice } from '@/lib/utils'
-import { ButtonLink } from '@/components/ui/Button'
+import { cn, formatPrice } from '@/lib/utils'
+import { Button, ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { Logo } from '@/components/ui/Logo'
 import { SignatureDishCarousel } from './SignatureDishCarousel'
@@ -28,6 +28,7 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
   const [activeSlug, setActiveSlug] = useState(dishes[0]?.slug ?? '')
   const [playing, setPlaying] = useState(true)
   const [muted, setMuted] = useState(true)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const active = useMemo(
     () => dishes.find((d) => d.slug === activeSlug) ?? dishes[0],
@@ -37,6 +38,20 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
   const handleSelect = useCallback((slug: string) => {
     setActiveSlug(slug)
     setPlaying(true)
+  }, [])
+
+  const openMenu = useCallback(() => setMenuOpen(true), [])
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+
+  /**
+   * Close only when focus actually leaves the group.
+   *
+   * Tabbing from the trigger onto the first dish card fires blur on the
+   * trigger; without this check the strip would snap shut underneath the very
+   * element the user just reached.
+   */
+  const handleBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setMenuOpen(false)
   }, [])
 
   /**
@@ -188,15 +203,62 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
         </div>
       )}
 
-      {/* ---- Signature dish strip ----
-          Full-bleed on purpose: the eight dishes span the whole screen width
-          rather than sitting inside the 16:9 content box. */}
-      <div className="relative z-10 w-full shrink-0 px-4 pb-5 sm:px-6 lg:px-8 short:pb-3">
-        <SignatureDishCarousel
-          dishes={dishes}
-          activeSlug={active.slug}
-          onSelect={handleSelect}
-        />
+      {/* ---- Live Menu ----
+          The eight-dish strip used to sit open on every visit, taking a third
+          of the banner away from the footage it exists to advertise. It now
+          collapses behind a single gold trigger and slides back up on hover.
+
+          Hover and focus are handled on the wrapper rather than the trigger:
+          once the strip is open the pointer has to travel across it, and a
+          listener on the button alone would close it the moment the cursor
+          left. Click toggles as well, since touch devices never hover. */}
+      <div
+        className="relative z-20 w-full shrink-0"
+        onMouseEnter={openMenu}
+        onMouseLeave={closeMenu}
+        onFocusCapture={openMenu}
+        onBlurCapture={handleBlur}
+      >
+        {/* Full-bleed on purpose: the eight dishes span the whole screen width
+            rather than sitting inside the 16:9 content box. */}
+        <div
+          id="hero-live-menu"
+          className={cn(
+            'overflow-hidden transition-[max-height,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            menuOpen ? 'max-h-[360px] opacity-100' : 'max-h-0 opacity-0',
+          )}
+        >
+          <div className="px-4 pb-4 sm:px-6 lg:px-8">
+            <SignatureDishCarousel
+              dishes={dishes}
+              activeSlug={active.slug}
+              onSelect={handleSelect}
+            />
+          </div>
+        </div>
+
+        {/* No `aria-hidden` on the collapsed panel: the cards stay reachable by
+            keyboard, and focusing one opens the strip via onFocusCapture.
+            Hiding focusable content from assistive tech would be worse than
+            showing it. */}
+        <div className="flex justify-center pb-5 short:pb-3">
+          <Button
+            variant="gold"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-expanded={menuOpen}
+            aria-controls="hero-live-menu"
+            className="min-w-[190px]"
+          >
+            <span>{t.hero.liveMenu}</span>
+            <ChevronUp
+              aria-hidden
+              className={cn(
+                'h-4 w-4 transition-transform duration-300',
+                menuOpen && 'rotate-180',
+              )}
+            />
+          </Button>
+        </div>
       </div>
     </section>
   )

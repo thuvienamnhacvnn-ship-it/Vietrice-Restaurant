@@ -52,6 +52,7 @@ export const vi: Dictionary = {
     titleLine2: 'in the Heart of Berlin',
     subtitle: 'Nguyên liệu tươi ngon. Công thức truyền thống.\nHương vị gắn kết mọi người.',
     signatureDishes: 'MÓN ĐẶC TRƯNG CỦA CHÚNG TÔI',
+    liveMenu: 'LIVE MENU',
     scrollHint: 'Cuộn xuống',
     dishCarouselLabel: 'Chọn món đặc trưng',
   },

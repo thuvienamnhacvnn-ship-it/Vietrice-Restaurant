@@ -28,10 +28,10 @@ export type VideoBackgroundProps = {
 /**
  * Full-bleed background media.
  *
- * The poster image is always rendered underneath, so a missing or broken video
- * degrades to a still frame rather than a black box. Autoplay is only ever
- * attempted muted, which is what browsers require. Users who ask for reduced
- * motion get the still image and no video element at all.
+ * A missing or broken video degrades to the still frame rather than a black
+ * box, but the still is never shown *in front of* a clip that is going to
+ * play. Autoplay is only ever attempted muted, which is what browsers require.
+ * Users who ask for reduced motion get the still image and no video at all.
  */
 export function VideoBackground({
   src,
@@ -90,28 +90,35 @@ export function VideoBackground({
   }, [onEnded, showVideo, playing, reducedMotion, src])
 
   return (
-    <div className={cn('absolute inset-0 overflow-hidden', className)}>
-      <Image
-        src={poster}
-        alt={alt}
-        fill
-        priority={priority}
-        sizes="100vw"
-        className={cn(
-          'object-cover transition-opacity duration-700',
-          showVideo && ready ? 'opacity-0' : 'opacity-100',
-        )}
-      />
+    <div className={cn('absolute inset-0 overflow-hidden bg-background', className)}>
+      {/* The still is for the cases where no clip will play: no footage, a
+          broken file, or reduced motion. It used to render underneath every
+          video too, which meant each switch flashed the thumbnail before the
+          first frame arrived. Nothing to fade out now — the clip is the shot. */}
+      {!showVideo && (
+        <Image
+          src={poster}
+          alt={alt}
+          fill
+          priority={priority}
+          sizes="100vw"
+          className="object-cover"
+        />
+      )}
 
       {showVideo && (
         <video
           ref={videoRef}
           key={src}
           src={src ?? undefined}
-          poster={poster}
+          // Deliberately no `poster`: the browser paints it until the first
+          // video frame decodes, which is the flash this change removes.
           muted={muted}
           loop={!onEnded}
           playsInline
+          // Metadata only. `auto` shortens the gap before the first frame but
+          // holds the window `load` event open until the whole clip is down,
+          // which left the tab spinning for as long as the download took.
           preload="metadata"
           aria-hidden
           onCanPlay={() => setReady(true)}

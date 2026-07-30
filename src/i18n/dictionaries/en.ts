@@ -52,6 +52,7 @@ export const en: Dictionary = {
     titleLine2: 'in the Heart of Berlin',
     subtitle: 'Fresh ingredients. Traditional recipes.\nA taste that brings people together.',
     signatureDishes: 'OUR SIGNATURE DISHES',
+    liveMenu: 'LIVE MENU',
     scrollHint: 'Scroll down',
     dishCarouselLabel: 'Choose a signature dish',
   },
