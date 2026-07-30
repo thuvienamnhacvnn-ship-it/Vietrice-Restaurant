@@ -53,6 +53,21 @@ const video = join(videoDir, `${slug}.mp4`)
 const poster = join(posterDir, `${slug}.jpg`)
 const thumb = join(thumbDir, `${slug}.jpg`)
 
+/**
+ * Colour grade applied to the video and to both stills, identically.
+ *
+ * The supplied clips are lit dark and moody; the design mockups show bright,
+ * appetising food against a dark surround. The curve lifts shadows and
+ * midtones while leaving highlights alone, so the food reads clearly without
+ * the wooden table blowing out — turning up plain brightness instead would
+ * grey the blacks that the whole theme rests on.
+ *
+ * It has to be identical on all three outputs, or the still and the moving
+ * image would not match and the banner would shift colour when the video
+ * starts.
+ */
+const GRADE = "curves=all='0/0.03 0.25/0.42 0.6/0.78 1/1',eq=saturation=1.28:contrast=1.04"
+
 const ffmpeg = (args) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args], { stdio: 'inherit' })
 
 try {
@@ -63,7 +78,7 @@ try {
     '-c:v', 'libx264',
     '-profile:v', 'high',
     '-pix_fmt', 'yuv420p',        // Safari refuses anything else
-    '-vf', 'scale=1280:-2',       // -2 keeps the height even, which H.264 requires
+    '-vf', `${GRADE},scale=1280:-2`, // -2 keeps the height even, which H.264 requires
     '-crf', '26',
     '-preset', 'slow',
     '-g', '48',                   // keyframe every 2s so the loop restarts cleanly
@@ -74,10 +89,12 @@ try {
   console.log(`Cutting poster   -> public/images/hero/dishes/${slug}.jpg  (at ${posterAt}s)`)
   ffmpeg([
     '-ss', String(posterAt),
-    '-i', video,
+    '-i', source,
     '-frames:v', '1',
-    // Cover 16:9 without distorting: scale to fill, then centre-crop.
-    '-vf', 'scale=1600:900:force_original_aspect_ratio=increase,crop=1600:900',
+    // Cover 16:9 without distorting: scale to fill, then centre-crop. Cut from
+    // the source, not the encoded file, so the still is not a re-compression
+    // of an already-compressed frame.
+    '-vf', `${GRADE},scale=1600:900:force_original_aspect_ratio=increase,crop=1600:900`,
     '-q:v', '3',
     poster,
   ])
@@ -85,9 +102,9 @@ try {
   console.log(`Cutting thumbnail-> public/images/dishes/${slug}.jpg`)
   ffmpeg([
     '-ss', String(posterAt),
-    '-i', video,
+    '-i', source,
     '-frames:v', '1',
-    '-vf', 'scale=382:256:force_original_aspect_ratio=increase,crop=382:256',
+    '-vf', `${GRADE},scale=382:256:force_original_aspect_ratio=increase,crop=382:256`,
     '-q:v', '3',
     thumb,
   ])

@@ -263,4 +263,34 @@ const extraMenuItems: MenuItemSeed[] = [
   },
 ]
 
-export const menuItems: MenuItemSeed[] = [...signatureMenuItems, ...extraMenuItems]
+/**
+ * Which dishes appear in the home hero strip, in order.
+ *
+ * `isSignature` on the seed modules made the strip a drink-and-seven-dishes
+ * mix, and the only clip that is not food is the one that does not exist —
+ * there is no coffee footage, so Ca Phe Viet sat on the banner as the single
+ * still among moving dishes. Sashimi takes its place: it has a clip, and a
+ * second Japanese plate suits a restaurant that sells sushi.
+ *
+ * Managers can still change this from Admin → Speisekarte; this is only the
+ * shipped default that a fresh seed starts from.
+ */
+const HERO_SLUGS = [
+  'pho-bo-dac-biet',
+  'bun-bo-hue',
+  'goi-cuon-tom',
+  'com-tam-suon',
+  'sushi-set-premium',
+  'banh-xeo',
+  'bun-cha-ha-noi',
+  'sashimi-lachs',
+] as const
+
+export const menuItems: MenuItemSeed[] = [...signatureMenuItems, ...extraMenuItems].map(
+  (item) => {
+    const heroIndex = HERO_SLUGS.indexOf(item.slug as (typeof HERO_SLUGS)[number])
+    return heroIndex === -1
+      ? { ...item, isSignature: false }
+      : { ...item, isSignature: true, sortOrder: heroIndex }
+  },
+)
