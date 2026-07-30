@@ -538,6 +538,9 @@ export function ReservationSection({
               </div>
             </div>
 
+            {/* Sits directly under the map and no wider than it. */}
+            {showNotice && <NoticeTicker className="mt-3 hidden lg:flex" />}
+
             {!anySelectable && (
               <p
                 role="status"
@@ -633,8 +636,7 @@ export function ReservationSection({
           </div>
         </div>
 
-          {/* Full-width notice bar closing the section. */}
-        {showNotice && <NoticeTicker className="mt-4 hidden lg:flex xl:col-span-3 xl:mt-0" />}
+  
       </Container>
 
       <BookingModal
