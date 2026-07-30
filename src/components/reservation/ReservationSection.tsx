@@ -444,8 +444,10 @@ export function ReservationSection({
             </div>
           </div>
 
-          {/* ---- Floor plan ---- */}
-          <div>
+          {/* ---- Floor plan ----
+              A flex column, so the frame's flex-1 actually resolves and the map
+              absorbs whatever height the legend, chips and ticker leave over. */}
+          <div className="flex min-h-0 flex-col">
             <ul className="mb-3 flex shrink-0 flex-wrap items-center justify-center gap-5 text-[12.5px]">
               <li className="flex items-center gap-2">
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-success text-white">
