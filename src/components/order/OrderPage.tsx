@@ -6,7 +6,7 @@ import { CheckCircle2, Loader2, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-
 
 import type { MenuCategorySeed, MenuItemSeed } from '@/content/menu'
 import { useI18n } from '@/i18n/provider'
-import { localizedName, localizedSubtitle } from '@/lib/dish'
+import { localizedDescription, localizedName, localizedSubtitle } from '@/lib/dish'
 import { buildTimeSlots } from '@/lib/reservation'
 import { cn, formatPrice } from '@/lib/utils'
 import { cartSubtotalCents, lineTotalCents, useCart } from '@/store/cart'
@@ -19,6 +19,7 @@ const COPY = {
     lead: 'Zur Abholung im Restaurant. Bezahlung vor Ort.',
     cart: 'Ihre Bestellung',
     empty: 'Ihr Warenkorb ist leer.',
+    emptyCategory: 'In dieser Kategorie ist derzeit nichts hinterlegt.',
     add: 'Hinzufügen',
     name: 'Name',
     phone: 'Telefon',
@@ -38,6 +39,7 @@ const COPY = {
     lead: 'For pickup at the restaurant. Payment on site.',
     cart: 'Your order',
     empty: 'Your basket is empty.',
+    emptyCategory: 'Nothing is listed in this category yet.',
     add: 'Add',
     name: 'Name',
     phone: 'Phone',
@@ -57,6 +59,7 @@ const COPY = {
     lead: 'Nhận tại nhà hàng. Thanh toán khi lấy món.',
     cart: 'Đơn của bạn',
     empty: 'Giỏ hàng đang trống.',
+    emptyCategory: 'Danh mục này hiện chưa có món nào.',
     add: 'Thêm',
     name: 'Họ và tên',
     phone: 'Điện thoại',
@@ -187,7 +190,11 @@ export function OrderPage({
             ))}
           </ul>
 
-          <ul className="grid gap-3 sm:grid-cols-2">
+          {visible.length === 0 && (
+            <p className="card-lux p-6 text-center text-[13px] text-muted">{copy.emptyCategory}</p>
+          )}
+
+          <ul className="grid content-start gap-3 sm:grid-cols-2">
             {visible.map((item) => (
               <li key={item.slug} className="card-lux flex gap-3 p-3">
                 <span className="relative h-[70px] w-[80px] shrink-0 overflow-hidden rounded-md">
@@ -203,8 +210,12 @@ export function OrderPage({
                   <span className="truncate font-display text-[15px] uppercase tracking-wide text-cream">
                     {localizedName(item, locale)}
                   </span>
+                  {/* In Vietnamese the subtitle *is* the dish name, so it would
+                      print twice; the description is the useful line there. */}
                   <span className="truncate text-[11.5px] text-muted">
-                    {localizedSubtitle(item, locale)}
+                    {locale === 'vi'
+                      ? localizedDescription(item, locale)
+                      : localizedSubtitle(item, locale)}
                   </span>
                   <span className="mt-auto flex items-center justify-between gap-2 pt-1.5">
                     <span className="text-[13.5px] font-medium text-gold">

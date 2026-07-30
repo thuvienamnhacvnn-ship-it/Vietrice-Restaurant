@@ -8,6 +8,11 @@ export const dynamic = 'force-dynamic'
 
 export const metadata = { title: 'Admin' }
 
+/**
+ * Shift dashboard: what is coming next and the floor plan. Full management of
+ * reservations and orders lives on their own pages — this one stays a glance,
+ * so it deliberately shows only the next few of each.
+ */
 export default async function AdminPage() {
   const session = await readSession()
   // Middleware already redirects, but a route handler or a stale build could
@@ -21,26 +26,28 @@ export default async function AdminPage() {
 
   const [reservations, tables, orders, pendingCount, todayCount, openOrders, unread] =
     await Promise.all([
-    prisma.reservation.findMany({
-      orderBy: { startsAt: 'asc' },
-      take: 40,
-      where: { startsAt: { gte: startOfToday } },
-      include: { table: { select: { number: true } } },
-    }),
-    prisma.restaurantTable.findMany({ orderBy: { number: 'asc' } }),
-    // Completed and cancelled orders drop off the board: this is a working
-    // queue for the kitchen, not an archive. History lives in the audit log.
-    prisma.order.findMany({
-      orderBy: { pickupAt: 'asc' },
-      take: 40,
-      where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } },
-      include: { items: { select: { nameSnapshot: true, quantity: true } } },
-    }),
-    prisma.reservation.count({ where: { status: 'PENDING' } }),
-    prisma.reservation.count({ where: { startsAt: { gte: startOfToday, lt: endOfToday } } }),
-    prisma.order.count({ where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } }),
-    prisma.notification.count({ where: { readAt: null } }),
-  ])
+      prisma.reservation.findMany({
+        orderBy: { startsAt: 'asc' },
+        take: 8,
+        where: {
+          startsAt: { gte: startOfToday },
+          status: { notIn: ['CANCELLED', 'REJECTED', 'COMPLETED'] },
+        },
+        include: { table: { select: { number: true } } },
+      }),
+      prisma.restaurantTable.findMany({ orderBy: { number: 'asc' } }),
+      prisma.order.findMany({
+        orderBy: { pickupAt: 'asc' },
+        take: 8,
+        where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } },
+      }),
+      prisma.reservation.count({
+        where: { status: { in: ['PENDING', 'CALLBACK_REQUIRED'] } },
+      }),
+      prisma.reservation.count({ where: { startsAt: { gte: startOfToday, lt: endOfToday } } }),
+      prisma.order.count({ where: { status: { notIn: ['COMPLETED', 'CANCELLED'] } } }),
+      prisma.notification.count({ where: { readAt: null } }),
+    ])
 
   return (
     <AdminConsole
@@ -56,12 +63,10 @@ export default async function AdminPage() {
         id: r.id,
         code: r.code,
         guestName: r.guestName,
-        guestPhone: r.guestPhone,
         partySize: r.partySize,
         tableNumber: r.table.number,
         startsAt: r.startsAt.toISOString(),
         status: r.status,
-        notes: r.notes,
       }))}
       tables={tables.map((t) => ({
         id: t.id,
@@ -73,13 +78,9 @@ export default async function AdminPage() {
         id: o.id,
         code: o.code,
         guestName: o.guestName,
-        guestPhone: o.guestPhone,
         pickupAt: o.pickupAt.toISOString(),
         status: o.status,
-        paymentStatus: o.paymentStatus,
         totalCents: o.totalCents,
-        notes: o.notes,
-        items: o.items.map((i) => ({ name: i.nameSnapshot, quantity: i.quantity })),
       }))}
     />
   )
