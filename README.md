@@ -118,15 +118,57 @@ is null and `VideoBackground` falls back to the poster image.
   carousel (radio-group semantics), visible focus rings, ARIA labels, and full
   `prefers-reduced-motion` support that drops the 3D layer entirely.
 
+## Deploying to Vercel
+
+1. Push this repository to GitHub and import it in Vercel. The framework is
+   detected automatically; `npm run build` already runs `prisma generate`, which
+   Vercel's build cache would otherwise skip.
+2. Set these environment variables in the Vercel project (Production **and**
+   Preview). Without `AUTH_SECRET` the app refuses to issue sessions — by
+   design, since a fallback signing key would be forgeable by anyone reading
+   the source.
+
+   | Variable | Notes |
+   | --- | --- |
+   | `DATABASE_URL` | The **pooled** connection string. Serverless functions open many short-lived connections; the pooler is what makes that survivable. |
+   | `DIRECT_URL` | The **direct** (non-pooled) endpoint. Migrations take an advisory lock that PgBouncer in transaction mode cannot hold. |
+   | `AUTH_SECRET` | `openssl rand -base64 32`. Required. |
+   | `NEXTAUTH_URL` | The deployed origin, e.g. `https://vietrice-restaurant.vercel.app`. |
+   | `NEXT_PUBLIC_SITE_URL` | Same origin; used for absolute URLs and metadata. |
+
+   Optional: `AI_PROVIDER` + `OPENAI_API_KEY` (otherwise the assistant runs in
+   grounded demo mode), `RESEND_API_KEY` + `EMAIL_FROM`, Cloudinary/Blob keys.
+
+3. Run migrations against the production database once, from your machine:
+   `npm run db:deploy`, then `npm run db:seed` for the first admin user and the
+   catalogue. Vercel's build does not run migrations, deliberately — a schema
+   change should never be a side effect of a deploy.
+4. Sign in at `/admin/login` and change the seeded password immediately at
+   `/admin/settings`.
+
+**If the database is shared with another project**, append `&schema=vietrice`
+to both URLs. Prisma Migrate operates on the whole database, and without a
+dedicated schema a reset can drop tables that belong to something else.
+
 ## Status
 
-Working and verified: production build (`npm run build`) passes with zero
-errors across all 10 routes; hero with dish-switching carousel; 12-table
-reservation floor plan with live countdowns and Zod-validated booking modal;
-smart menu with 3D ingredient parallax and takeaway cart; promotions with
-server-time countdown; gallery with lightbox; AI assistant in grounded demo
-mode; footer with live Google Map.
+Working and verified against a live PostgreSQL database: production build
+passes with zero errors; reservations and pickup orders persist through
+serializable transactions with double-booking rejection; the trilingual admin
+console (`/admin` plus orders, reservations, tables, menu, promotions, gallery,
+guests, history, settings) manages every one of them with a full audit trail;
+the public site reads the catalogue from the database, so admin edits reach
+guests; auth uses hashed passwords, rate limiting and server-side checks on
+every route; statutory pages are in place.
 
-Not yet built: the `/admin` area, the order checkout flow, and database
-persistence for reservations/orders (schema, migrations and seed are in place;
-the API routes validate fully and are marked where the Prisma transaction goes).
+Known gaps: no payment provider is wired (orders are marked `UNPAID` and paid
+at the counter); no email sending (`RESEND_API_KEY` is read but unused); admin
+can edit dishes, photos and promotions but not create or delete them; new
+bookings appear on a page refresh rather than in real time; and the seeded menu
+holds 14 dishes across 10 categories — it needs the restaurant's real card.
+
+The Impressum and Datenschutz pages are a working draft. Details only the
+operator holds (company form, register number, VAT ID, managing director, DPO)
+are left visibly blank as `[bitte ergänzen]` in `src/content/legal.ts`. German
+law requires them to be accurate; fill them in and have a lawyer review before
+going live.
