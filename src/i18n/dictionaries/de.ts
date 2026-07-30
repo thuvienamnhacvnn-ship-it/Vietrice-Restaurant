@@ -15,6 +15,9 @@ export const de = {
     contact: 'KONTAKT',
   },
   common: {
+    addressLabel: 'Adresse',
+    phoneLabel: 'Telefon',
+    emailLabel: 'E-Mail',
     reserveTable: 'TISCH RESERVIEREN',
     viewMenu: 'MENÜ ANSEHEN',
     watchVideo: 'VIDEO ANSEHEN',

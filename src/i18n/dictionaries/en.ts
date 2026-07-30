@@ -12,6 +12,9 @@ export const en: Dictionary = {
     contact: 'CONTACT',
   },
   common: {
+    addressLabel: 'Address',
+    phoneLabel: 'Phone',
+    emailLabel: 'Email',
     reserveTable: 'RESERVE TABLE',
     viewMenu: 'VIEW MENU',
     watchVideo: 'WATCH VIDEO',

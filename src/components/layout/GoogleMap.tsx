@@ -15,12 +15,25 @@ import { cn } from '@/lib/utils'
  * is blocked (consent tooling, offline, corporate policy) the component falls
  * back to a static card that links out to Google Maps.
  */
-export function GoogleMap({ className }: { className?: string }) {
+export function GoogleMap({
+  className,
+  zoom = 16,
+  /**
+   * The footer map is far below the fold, so it stays lazy. On the contact page
+   * the map *is* the content — deferring it there means staring at an empty
+   * frame for several seconds.
+   */
+  eager = false,
+}: {
+  className?: string
+  zoom?: number
+  eager?: boolean
+}) {
   const t = useT()
   const [failed, setFailed] = useState(false)
 
   const query = encodeURIComponent(site.address.full)
-  const embedSrc = `https://www.google.com/maps?q=${query}&z=16&output=embed`
+  const embedSrc = `https://www.google.com/maps?q=${query}&z=${zoom}&output=embed`
 
   return (
     <div className={cn('card-lux relative overflow-hidden', className)}>
@@ -28,7 +41,7 @@ export function GoogleMap({ className }: { className?: string }) {
         <iframe
           src={embedSrc}
           title={`${site.name} — ${site.address.full}`}
-          loading="lazy"
+          loading={eager ? 'eager' : 'lazy'}
           referrerPolicy="no-referrer-when-downgrade"
           onError={() => setFailed(true)}
           className="h-full w-full border-0 grayscale-[0.35] contrast-[1.05]"

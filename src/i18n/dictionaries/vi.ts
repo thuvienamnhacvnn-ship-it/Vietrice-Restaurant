@@ -12,6 +12,9 @@ export const vi: Dictionary = {
     contact: 'LIÊN HỆ',
   },
   common: {
+    addressLabel: 'Địa chỉ',
+    phoneLabel: 'Điện thoại',
+    emailLabel: 'Email',
     reserveTable: 'ĐẶT BÀN',
     viewMenu: 'XEM THỰC ĐƠN',
     watchVideo: 'XEM VIDEO',
