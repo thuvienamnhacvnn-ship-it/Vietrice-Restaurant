@@ -442,6 +442,7 @@ export function ReservationSection({
                 </span>
               </p>
             </div>
+
           </div>
 
           {/* ---- Floor plan ----
