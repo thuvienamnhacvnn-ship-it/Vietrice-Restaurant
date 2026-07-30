@@ -61,7 +61,7 @@ export function AIAssistantSection({
       >
         <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] xl:gap-12">
           {/* ---- Left: intro + chef ---- */}
-          <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
             <div>
               <p className="eyebrow">{t.assistant.title}</p>
               <h1
@@ -98,19 +98,22 @@ export function AIAssistantSection({
               </ul>
             </div>
 
-            {/* Chef portrait */}
-            <div className="relative mx-auto w-[240px] shrink-0 sm:w-[300px] lg:w-[360px] xl:w-[400px]">
+            {/* Chef portrait — supplied as a cut-out PNG, so it stands free of
+                the backdrop instead of sitting in a photographic box. */}
+            <div className="relative mx-auto w-[190px] shrink-0 self-end sm:w-[230px] lg:w-[260px] xl:w-[290px]">
+              {/* Warm floor glow behind the figure */}
               <div
                 aria-hidden
-                className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(216,174,99,0.22),transparent_68%)]"
+                className="absolute inset-x-0 bottom-0 h-[45%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,rgba(216,174,99,0.22),transparent_70%)] blur-md"
               />
               <Image
                 src="/images/assistant/ai-chef.png"
                 alt=""
                 aria-hidden
-                width={370}
-                height={330}
-                className="relative h-auto w-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                width={473}
+                height={682}
+                priority
+                className="relative h-auto w-full drop-shadow-[0_24px_46px_rgba(0,0,0,0.85)]"
               />
             </div>
           </div>

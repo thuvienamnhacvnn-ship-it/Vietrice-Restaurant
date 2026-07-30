@@ -156,13 +156,15 @@ export function AIChefLauncher() {
               hovered ? 'border-gold shadow-gold-lg' : 'border-gold/60 shadow-gold',
             )}
           >
+            {/* Square head-anchored crop; the full-height portrait would
+                shrink the face to nothing inside this medallion. */}
             <Image
-              src="/images/assistant/ai-chef.png"
+              src="/images/assistant/ai-chef-avatar.png"
               alt=""
               aria-hidden
-              width={210}
-              height={190}
-              className="h-full w-full scale-[1.18] object-cover object-top"
+              width={290}
+              height={290}
+              className="h-full w-full scale-[1.05] object-cover object-top"
             />
             <span
               aria-hidden
