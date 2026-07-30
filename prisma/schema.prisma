@@ -8,6 +8,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // Migrations need a direct session; Neon's pooled endpoint runs PgBouncer in
+  // transaction mode, which cannot hold the advisory lock Migrate takes out.
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------
