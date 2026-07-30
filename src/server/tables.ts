@@ -61,10 +61,12 @@ export async function getTableViews(
     ) {
       status = 'BLOCKED'
       busyUntilIso = table.blockedTo.toISOString()
-    } else if (table.status === 'MAINTENANCE') {
-      status = 'MAINTENANCE'
     } else {
-      status = 'AVAILABLE'
+      // No reservation holds this slot, so the table's own stored status wins.
+      // This must NOT collapse to AVAILABLE: staff set OCCUPIED, RESERVED and
+      // BLOCKED by hand from the admin floor plan, and defaulting here would
+      // silently hand a walk-in's table back to the booking form.
+      status = table.status
     }
 
     return {
