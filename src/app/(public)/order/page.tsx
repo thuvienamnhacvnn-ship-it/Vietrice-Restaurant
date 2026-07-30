@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import { menuCategories, menuItems } from '@/content/menu'
+import { getMenuData } from '@/server/catalogue'
 import { OrderPage } from '@/components/order/OrderPage'
 
 export const metadata: Metadata = {
@@ -8,10 +8,12 @@ export const metadata: Metadata = {
   description: 'Bestellen Sie zur Abholung im Viet Rice Berlin — Zahlung vor Ort.',
 }
 
-export default function Page() {
+export default async function Page() {
+  const { categories, items } = await getMenuData()
+
   return (
     <div className="pt-[var(--header-h)]">
-      <OrderPage categories={menuCategories} items={menuItems} />
+      <OrderPage categories={categories} items={items} />
     </div>
   )
 }

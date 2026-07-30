@@ -1,7 +1,5 @@
-import { redirect } from 'next/navigation'
-
-import { readSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { adminContext } from '@/server/admin'
 import { AdminConsole } from '@/components/admin/AdminConsole'
 
 export const dynamic = 'force-dynamic'
@@ -14,10 +12,7 @@ export const metadata = { title: 'Admin' }
  * so it deliberately shows only the next few of each.
  */
 export default async function AdminPage() {
-  const session = await readSession()
-  // Middleware already redirects, but a route handler or a stale build could
-  // reach this without one; the page must not render admin data regardless.
-  if (!session) redirect('/admin/login')
+  const ctx = await adminContext()
 
   const startOfToday = new Date()
   startOfToday.setHours(0, 0, 0, 0)
@@ -51,7 +46,7 @@ export default async function AdminPage() {
 
   return (
     <AdminConsole
-      session={{ name: session.name, role: session.role }}
+      {...ctx}
       stats={{
         pending: pendingCount,
         today: todayCount,

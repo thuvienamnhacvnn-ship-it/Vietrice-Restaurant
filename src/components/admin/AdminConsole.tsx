@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import { Bell, CalendarClock, Clock, Loader2, ShoppingBag, Users } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
-import { AdminShell } from '@/components/admin/AdminShell'
+import { AdminShell, type AdminShellProps } from '@/components/admin/AdminShell'
+import { useAdminI18n } from '@/components/admin/AdminI18n'
 
 type Reservation = {
   id: string
@@ -49,14 +50,6 @@ const ORDER_STATUS: Record<string, string> = {
 
 const TABLE_STATES = ['AVAILABLE', 'RESERVED', 'OCCUPIED', 'BLOCKED', 'MAINTENANCE'] as const
 
-const TABLE_LABEL: Record<string, string> = {
-  AVAILABLE: 'Frei',
-  RESERVED: 'Reserviert',
-  OCCUPIED: 'Besetzt',
-  BLOCKED: 'Gesperrt',
-  MAINTENANCE: 'Wartung',
-}
-
 const TABLE_STYLE: Record<string, string> = {
   AVAILABLE: 'border-success/50 bg-success/10 text-success',
   PENDING: 'border-warning/50 bg-warning/10 text-warning',
@@ -66,26 +59,41 @@ const TABLE_STYLE: Record<string, string> = {
   MAINTENANCE: 'border-white/20 bg-white/5 text-muted',
 }
 
-const time = (iso: string) =>
-  new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
 
-export function AdminConsole({
-  session,
-  stats,
-  reservations,
-  tables,
-  orders,
-}: {
-  session: { name: string; role: string }
+type ConsoleProps = {
   stats: { pending: number; today: number; unread: number; tables: number; openOrders: number }
   reservations: Reservation[]
   tables: Table[]
   orders: Order[]
-}) {
+}
+
+export function AdminConsole({
+  stats,
+  reservations,
+  tables,
+  orders,
+  ...shell
+}: ConsoleProps & Omit<AdminShellProps, 'children' | 'unread' | 'badges'>) {
+  return (
+    <AdminShell
+      {...shell}
+      unread={stats.unread}
+      badges={{ '/admin/orders': stats.openOrders, '/admin/reservations': stats.pending }}
+    >
+      <Dashboard stats={stats} reservations={reservations} tables={tables} orders={orders} />
+    </AdminShell>
+  )
+}
+
+function Dashboard({ stats, reservations, tables, orders }: ConsoleProps) {
+  const { t, intl } = useAdminI18n()
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const time = (iso: string) =>
+    new Date(iso).toLocaleTimeString(intl, { hour: '2-digit', minute: '2-digit' })
 
   const post = async (url: string, body: unknown, id: string) => {
     setBusyId(id)
@@ -98,31 +106,27 @@ export function AdminConsole({
       })
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
-        setError(data.error ?? 'Aktion fehlgeschlagen.')
+        setError(data.error ?? t.common.error)
         return
       }
       // Re-fetch on the server so the list reflects what was actually stored,
       // rather than optimistically showing a state the database may not hold.
       startTransition(() => router.refresh())
     } catch {
-      setError('Aktion fehlgeschlagen.')
+      setError(t.common.error)
     } finally {
       setBusyId(null)
     }
   }
 
   return (
-    <AdminShell
-      session={session}
-      unread={stats.unread}
-      badges={{ '/admin/orders': stats.openOrders, '/admin/reservations': stats.pending }}
-    >
+    <>
       <div className="grid gap-3 sm:grid-cols-4">
         {[
-          { label: 'Heute', value: stats.today, Icon: CalendarClock, href: '/admin/reservations' },
-          { label: 'Offen', value: stats.pending, Icon: Clock, href: '/admin/reservations' },
-          { label: 'Bestellungen', value: stats.openOrders, Icon: ShoppingBag, href: '/admin/orders' },
-          { label: 'Tische', value: stats.tables, Icon: Users, href: '/admin' },
+          { label: t.dashboard.statToday, value: stats.today, Icon: CalendarClock, href: '/admin/reservations' },
+          { label: t.dashboard.statOpen, value: stats.pending, Icon: Clock, href: '/admin/reservations' },
+          { label: t.dashboard.statOrders, value: stats.openOrders, Icon: ShoppingBag, href: '/admin/orders' },
+          { label: t.dashboard.statTables, value: stats.tables, Icon: Users, href: '/admin/tables' },
         ].map(({ label, value, Icon, href }) => (
           <Link
             key={label}
@@ -155,16 +159,16 @@ export function AdminConsole({
           <section>
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="font-display text-lg uppercase tracking-luxe text-gold-light">
-                Als Nächstes
+                {t.dashboard.nextUp}
               </h2>
               <Link href="/admin/reservations" className="text-[12.5px] text-gold hover:underline">
-                Alle Reservierungen →
+                {t.dashboard.allReservations}
               </Link>
             </div>
 
             {reservations.length === 0 ? (
               <p className="card-lux p-6 text-center text-[13px] text-muted">
-                Keine Reservierungen ab heute.
+                {t.dashboard.noReservations}
               </p>
             ) : (
               <ul className="card-lux divide-y divide-gold/10">
@@ -175,7 +179,7 @@ export function AdminConsole({
                     </span>
                     <span className="text-[13.5px] text-cream">{r.guestName}</span>
                     <span className="text-[12.5px] text-muted">
-                      Tisch {r.tableNumber} · {r.partySize} Pers.
+                      {t.reservations.table} {r.tableNumber} · {r.partySize} {t.reservations.persons}
                     </span>
                     <span
                       className={cn(
@@ -195,16 +199,16 @@ export function AdminConsole({
           <section>
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="font-display text-lg uppercase tracking-luxe text-gold-light">
-                Offene Bestellungen
+                {t.dashboard.openOrders}
               </h2>
               <Link href="/admin/orders" className="text-[12.5px] text-gold hover:underline">
-                Bestellungen verwalten →
+                {t.dashboard.manageOrders}
               </Link>
             </div>
 
             {orders.length === 0 ? (
               <p className="card-lux p-6 text-center text-[13px] text-muted">
-                Keine offenen Bestellungen.
+                {t.dashboard.noOrders}
               </p>
             ) : (
               <ul className="card-lux divide-y divide-gold/10">
@@ -216,7 +220,10 @@ export function AdminConsole({
                     <span className="text-[13.5px] text-cream">{o.code}</span>
                     <span className="text-[12.5px] text-muted">{o.guestName}</span>
                     <span className="text-[12.5px] tabular-nums text-gold">
-                      {(o.totalCents / 100).toFixed(2).replace('.', ',')} €
+                      {new Intl.NumberFormat(intl, {
+                        style: 'currency',
+                        currency: 'EUR',
+                      }).format(o.totalCents / 100)}
                     </span>
                     <span
                       className={cn(
@@ -236,23 +243,25 @@ export function AdminConsole({
         {/* ---- Floor plan control ---- */}
         <section>
           <h2 className="mb-3 font-display text-lg uppercase tracking-luxe text-gold-light">
-            Tischstatus
+            {t.dashboard.tableStatus}
           </h2>
           <ul className="space-y-2">
-            {tables.map((t) => (
-              <li key={t.id} className="card-lux p-3">
+            {tables.map((table) => (
+              <li key={table.id} className="card-lux p-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[13.5px] text-cream">
-                    Tisch {t.number}
-                    <span className="ml-2 text-[12px] text-muted">{t.capacity} Plätze</span>
+                    {t.reservations.table} {table.number}
+                    <span className="ml-2 text-[12px] text-muted">
+                      {table.capacity} {t.tables.capacity}
+                    </span>
                   </span>
                   <span
                     className={cn(
                       'rounded border px-2 py-0.5 text-[10px] uppercase tracking-luxe',
-                      TABLE_STYLE[t.status] ?? 'border-white/20 text-muted',
+                      TABLE_STYLE[table.status] ?? 'border-white/20 text-muted',
                     )}
                   >
-                    {TABLE_LABEL[t.status] ?? t.status}
+                    {t.tables.status[table.status as keyof typeof t.tables.status] ?? table.status}
                   </span>
                 </div>
 
@@ -261,14 +270,14 @@ export function AdminConsole({
                     <button
                       key={s}
                       type="button"
-                      disabled={busyId === t.id || t.status === s}
-                      onClick={() => post('/api/admin/tables', { tableId: t.id, status: s }, t.id)}
+                      disabled={busyId === table.id || table.status === s}
+                      onClick={() => post('/api/admin/tables', { tableId: table.id, status: s }, table.id)}
                       className="fx-press rounded border border-gold/20 px-2 py-0.5 text-[11px] text-cream/70 transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-35"
                     >
-                      {TABLE_LABEL[s]}
+                      {t.tables.status[s]}
                     </button>
                   ))}
-                  {busyId === t.id && (
+                  {busyId === table.id && (
                     <Loader2 className="h-3.5 w-3.5 animate-spin self-center text-gold" aria-hidden />
                   )}
                 </div>
@@ -281,9 +290,9 @@ export function AdminConsole({
       {pending && (
         <p className="mt-4 flex items-center gap-2 text-[12.5px] text-muted">
           <Bell className="h-4 w-4 text-gold" aria-hidden />
-          Aktualisiere…
+          {t.common.refreshing}
         </p>
       )}
-    </AdminShell>
+    </>
   )
 }

@@ -1,27 +1,26 @@
-import { redirect } from 'next/navigation'
-
-import { readSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { adminContext } from '@/server/admin'
+import { getLocale } from '@/i18n'
+import { getAdminDictionary } from '@/i18n/admin'
 import { AdminShell } from '@/components/admin/AdminShell'
 import { OrdersBoard } from '@/components/admin/OrdersBoard'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata = { title: 'Bestellungen | Admin' }
+export async function generateMetadata() {
+  const locale = await getLocale()
+  return { title: `${getAdminDictionary(locale).nav.orders} | Admin` }
+}
 
 export default async function AdminOrdersPage() {
-  const session = await readSession()
-  // Middleware already redirects, but the page must not render order data
-  // without a session regardless of how it was reached.
-  if (!session) redirect('/admin/login')
+  const ctx = await adminContext()
 
   // Closed orders stay visible for the last two days so staff can look up a
   // handover or a refund; older ones are history, not a working queue.
   const since = new Date()
   since.setDate(since.getDate() - 2)
 
-  const [orders, unread, openReservations] = await Promise.all([
-    prisma.order.findMany({
+  const orders = await prisma.order.findMany({
       where: {
         OR: [{ status: { notIn: ['COMPLETED', 'CANCELLED'] } }, { createdAt: { gte: since } }],
       },
@@ -32,21 +31,10 @@ export default async function AdminOrdersPage() {
           select: { nameSnapshot: true, quantity: true, unitPriceCents: true, notes: true },
         },
       },
-    }),
-    prisma.notification.count({ where: { readAt: null } }),
-    prisma.reservation.count({ where: { status: 'PENDING' } }),
-  ])
-
-  const openOrders = orders.filter(
-    (o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED',
-  ).length
+  })
 
   return (
-    <AdminShell
-      session={{ name: session.name, role: session.role }}
-      unread={unread}
-      badges={{ '/admin/orders': openOrders, '/admin/reservations': openReservations }}
-    >
+    <AdminShell {...ctx}>
       <OrdersBoard
         orders={orders.map((o) => ({
           id: o.id,

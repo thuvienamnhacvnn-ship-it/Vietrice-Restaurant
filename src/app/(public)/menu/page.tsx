@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
-import { allergens, menuCategories, menuItems } from '@/content/menu'
+import { allergens } from '@/content/menu'
+import { getMenuData } from '@/server/catalogue'
 import { getLocale } from '@/i18n'
 import { SmartMenu } from '@/components/menu/SmartMenu'
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 export default async function MenuPage() {
-  const locale = await getLocale()
+  const [locale, { categories, items }] = await Promise.all([getLocale(), getMenuData()])
 
   // Allergen labels are resolved server-side so the client bundle carries only
   // the strings for the active locale.
@@ -25,8 +26,8 @@ export default async function MenuPage() {
   return (
       <>
       <SmartMenu
-        categories={menuCategories}
-        items={menuItems}
+        categories={categories}
+        items={items}
         allergenLabels={allergenLabels}
       />
     </>

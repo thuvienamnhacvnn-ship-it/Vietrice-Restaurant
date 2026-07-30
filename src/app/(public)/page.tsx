@@ -1,8 +1,8 @@
-import { galleryItems } from '@/content/gallery'
-import { allergens, menuCategories, menuItems } from '@/content/menu'
+import { allergens } from '@/content/menu'
+import { getMenuData, getPublicGallery, getPublicPromotions } from '@/server/catalogue'
 import { signatureDishes } from '@/content/signature-dishes'
 import { getLocale } from '@/i18n'
-import { getActivePromotions, nextExpiring } from '@/lib/promotions'
+import { nextExpiring } from '@/lib/promotions'
 import { combineDateTime, getDemoTableViews, toDateInput } from '@/lib/reservation'
 import { HeroDishShowcase } from '@/components/home/HeroDishShowcase'
 import { AIAssistantSection } from '@/components/assistant/AIAssistantSection'
@@ -25,7 +25,8 @@ export default async function HomePage() {
   const locale = await getLocale()
   const now = new Date()
 
-  const promotions = getActivePromotions(locale, now)
+  const [{ categories: menuCategories, items: menuItems }, galleryItems, promotions] =
+    await Promise.all([getMenuData(), getPublicGallery(), getPublicPromotions(locale, now)])
   const soonest = nextExpiring(promotions)
 
   const date = toDateInput(now)

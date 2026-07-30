@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { fill } from '@/i18n/admin'
+import { useAdminI18n } from '@/components/admin/AdminI18n'
 
 export type AdminOrder = {
   id: string
@@ -31,15 +33,6 @@ export type AdminOrder = {
   totalCents: number
   notes: string | null
   items: { name: string; quantity: number; unitPriceCents: number; notes: string | null }[]
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  NEW: 'Neu',
-  CONFIRMED: 'Angenommen',
-  PREPARING: 'In Zubereitung',
-  READY_FOR_PICKUP: 'Abholbereit',
-  COMPLETED: 'Abgeholt',
-  CANCELLED: 'Storniert',
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -60,27 +53,29 @@ const STATUS_STYLE: Record<string, string> = {
 const FLOW = ['NEW', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'COMPLETED'] as const
 
 const FILTERS = [
-  { key: 'OPEN', label: 'Offen', Icon: Clock },
-  { key: 'NEW', label: 'Neu', Icon: ShoppingBag },
-  { key: 'PREPARING', label: 'In Zubereitung', Icon: ChefHat },
-  { key: 'READY_FOR_PICKUP', label: 'Abholbereit', Icon: PackageCheck },
-  { key: 'COMPLETED', label: 'Abgeholt', Icon: BadgeEuro },
-  { key: 'CANCELLED', label: 'Storniert', Icon: XCircle },
-  { key: 'ALL', label: 'Alle', Icon: Search },
+  { key: 'OPEN', Icon: Clock },
+  { key: 'NEW', Icon: ShoppingBag },
+  { key: 'PREPARING', Icon: ChefHat },
+  { key: 'READY_FOR_PICKUP', Icon: PackageCheck },
+  { key: 'COMPLETED', Icon: BadgeEuro },
+  { key: 'CANCELLED', Icon: XCircle },
+  { key: 'ALL', Icon: Search },
 ] as const
 
-const euro = (cents: number) => `${(cents / 100).toFixed(2).replace('.', ',')} €`
-
-const dateTime = (iso: string) =>
-  new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
 
 export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
+  const { t, intl } = useAdminI18n()
   const router = useRouter()
   const [refreshing, startTransition] = useTransition()
   const [filter, setFilter] = useState<string>('OPEN')
   const [query, setQuery] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const euro = (cents: number) =>
+    new Intl.NumberFormat(intl, { style: 'currency', currency: 'EUR' }).format(cents / 100)
+  const dateTime = (iso: string) =>
+    new Date(iso).toLocaleString(intl, { dateStyle: 'short', timeStyle: 'short' })
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { ALL: orders.length, OPEN: 0 }
@@ -129,13 +124,13 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
       })
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
-        setError(data.error ?? 'Aktion fehlgeschlagen.')
+        setError(data.error ?? t.common.error)
         return
       }
       // Re-read from the server rather than assuming the write landed.
       startTransition(() => router.refresh())
     } catch {
-      setError('Aktion fehlgeschlagen.')
+      setError(t.common.error)
     } finally {
       setBusyId(null)
     }
@@ -146,11 +141,14 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl uppercase tracking-luxe text-gold-light">
-            Bestellungen
+            {t.orders.title}
           </h1>
           <p className="mt-1 text-[12.5px] text-muted">
-            {counts.OPEN} offen · {counts.COMPLETED ?? 0} abgeholt · Umsatz abgeholt{' '}
-            {euro(revenue)}
+            {fill(t.orders.summary, {
+              open: counts.OPEN,
+              done: counts.COMPLETED ?? 0,
+              revenue: euro(revenue),
+            })}
           </p>
         </div>
 
@@ -162,14 +160,14 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Code, Name oder Telefon"
+            placeholder={t.orders.searchPlaceholder}
             className="h-10 w-[260px] rounded-lg border border-gold/25 bg-black/40 pl-9 pr-3 text-[13px] text-cream placeholder:text-muted/70 focus:border-gold focus:outline-none"
           />
         </label>
       </div>
 
       <ul className="mt-4 flex flex-wrap gap-2">
-        {FILTERS.map(({ key, label, Icon }) => (
+        {FILTERS.map(({ key, Icon }) => (
           <li key={key}>
             <button
               type="button"
@@ -182,7 +180,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
               )}
             >
               <Icon className="h-3.5 w-3.5" aria-hidden />
-              {label}
+              {t.orders.filters[key]}
               <span className="tabular-nums text-muted">{counts[key] ?? 0}</span>
             </button>
           </li>
@@ -200,7 +198,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
 
       {visible.length === 0 ? (
         <p className="card-lux mt-5 p-8 text-center text-[13px] text-muted">
-          Keine Bestellungen in dieser Ansicht.
+          {t.orders.empty}
         </p>
       ) : (
         <ul className="mt-5 grid gap-3 xl:grid-cols-2">
@@ -221,7 +219,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
                           STATUS_STYLE[o.status] ?? 'border-white/20 text-muted',
                         )}
                       >
-                        {STATUS_LABEL[o.status] ?? o.status}
+                        {t.orders.status[o.status as keyof typeof t.orders.status] ?? o.status}
                       </span>
                       <span
                         className={cn(
@@ -231,18 +229,18 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
                             : 'border-danger/40 text-danger',
                         )}
                       >
-                        {o.paymentStatus === 'PAID'
-                          ? 'Bezahlt'
-                          : o.paymentStatus === 'REFUNDED'
-                            ? 'Erstattet'
-                            : 'Unbezahlt'}
+                        {t.orders.payment[
+                          o.paymentStatus as keyof typeof t.orders.payment
+                        ] ?? o.paymentStatus}
                       </span>
                     </p>
 
                     <p className="mt-1.5 text-[13.5px] text-cream">
-                      {o.guestName} · Abholung {dateTime(o.pickupAt)}
+                      {o.guestName} · {t.orders.pickup} {dateTime(o.pickupAt)}
                     </p>
-                    <p className="text-[12px] text-muted">Eingegangen {dateTime(o.createdAt)}</p>
+                    <p className="text-[12px] text-muted">
+                      {t.orders.received} {dateTime(o.createdAt)}
+                    </p>
                   </div>
 
                   <div className="text-right">
@@ -295,7 +293,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
                       }
                       className="fx-press rounded-md border border-gold/50 bg-gold/12 px-3 py-1.5 text-[12.5px] text-gold-light disabled:opacity-40"
                     >
-                      → {STATUS_LABEL[next]}
+                      → {t.orders.status[next]}
                     </button>
                   )}
 
@@ -307,7 +305,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
                       onClick={() => post(o, s, s === 'COMPLETED' ? 'PAID' : undefined)}
                       className="fx-press rounded-md border border-gold/20 px-2.5 py-1 text-[12px] text-cream/70 transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-40"
                     >
-                      {STATUS_LABEL[s]}
+                      {t.orders.status[s]}
                     </button>
                   ))}
 
@@ -318,7 +316,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
                       onClick={() => post(o, 'CANCELLED')}
                       className="fx-press rounded-md border border-danger/35 px-2.5 py-1 text-[12px] text-danger/85 transition-colors hover:bg-danger/10 disabled:opacity-40"
                     >
-                      Stornieren
+                      {t.orders.cancel}
                     </button>
                   )}
 
@@ -329,7 +327,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
                       onClick={() => post(o, o.status, 'PAID')}
                       className="fx-press rounded-md border border-success/40 px-2.5 py-1 text-[12px] text-success disabled:opacity-40"
                     >
-                      Als bezahlt markieren
+                      {t.orders.markPaid}
                     </button>
                   )}
 
@@ -343,7 +341,7 @@ export function OrdersBoard({ orders }: { orders: AdminOrder[] }) {
         </ul>
       )}
 
-      {refreshing && <p className="mt-4 text-[12.5px] text-muted">Aktualisiere…</p>}
+      {refreshing && <p className="mt-4 text-[12.5px] text-muted">{t.common.refreshing}</p>}
     </>
   )
 }

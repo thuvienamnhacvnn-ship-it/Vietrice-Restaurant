@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 
 import { getLocale } from '@/i18n'
-import { getActivePromotions, nextExpiring } from '@/lib/promotions'
+import { nextExpiring } from '@/lib/promotions'
+import { getPublicPromotions } from '@/server/catalogue'
 import { PromotionsSection } from '@/components/promotions/PromotionsSection'
 
 export const metadata: Metadata = {
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 export default async function PromotionsPage() {
   const locale = await getLocale()
   const now = new Date()
-  const promotions = getActivePromotions(locale, now)
+  const promotions = await getPublicPromotions(locale, now)
   const soonest = nextExpiring(promotions)
 
   return (

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Phone, Search } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
+import { fill } from '@/i18n/admin'
+import { useAdminI18n } from '@/components/admin/AdminI18n'
 
 export type AdminReservation = {
   id: string
@@ -20,17 +22,6 @@ export type AdminReservation = {
   notes: string | null
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: 'Offen',
-  CALLBACK_REQUIRED: 'Rückruf',
-  CONFIRMED: 'Bestätigt',
-  SEATED: 'Eingesetzt',
-  COMPLETED: 'Abgeschlossen',
-  REJECTED: 'Abgelehnt',
-  CANCELLED: 'Storniert',
-  NO_SHOW: 'Nicht erschienen',
-}
-
 const STATUS_STYLE: Record<string, string> = {
   PENDING: 'border-warning/50 bg-warning/10 text-warning',
   CALLBACK_REQUIRED: 'border-warning/50 bg-warning/10 text-warning',
@@ -44,28 +35,15 @@ const STATUS_STYLE: Record<string, string> = {
 
 /** Outcomes offered after the confirmation call, per the booking workflow. */
 const CALL_ACTIONS = [
-  { label: 'Bestätigt', status: 'CONFIRMED', outcome: 'CONFIRMED' },
-  { label: 'Keine Antwort', status: 'CALLBACK_REQUIRED', outcome: 'NO_ANSWER' },
-  { label: 'Abgelehnt', status: 'REJECTED', outcome: 'REJECTED' },
-  { label: 'Storniert', status: 'CANCELLED', outcome: 'CANCELLED' },
+  { status: 'CONFIRMED', outcome: 'CONFIRMED' },
+  { status: 'CALLBACK_REQUIRED', outcome: 'NO_ANSWER' },
+  { status: 'REJECTED', outcome: 'REJECTED' },
+  { status: 'CANCELLED', outcome: 'CANCELLED' },
 ] as const
 
-const LATER_ACTIONS = [
-  { label: 'Eingesetzt', status: 'SEATED' },
-  { label: 'Abgeschlossen', status: 'COMPLETED' },
-  { label: 'Nicht erschienen', status: 'NO_SHOW' },
-] as const
+const LATER_ACTIONS = ['SEATED', 'COMPLETED', 'NO_SHOW'] as const
 
-const FILTERS = [
-  { key: 'OPEN', label: 'Zu bearbeiten' },
-  { key: 'CONFIRMED', label: 'Bestätigt' },
-  { key: 'SEATED', label: 'Im Haus' },
-  { key: 'TODAY', label: 'Heute' },
-  { key: 'ALL', label: 'Alle' },
-] as const
-
-const dateTime = (iso: string) =>
-  new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
+const FILTERS = ['OPEN', 'CONFIRMED', 'SEATED', 'TODAY', 'ALL'] as const
 
 const isToday = (iso: string) => {
   const d = new Date(iso)
@@ -78,12 +56,16 @@ const isToday = (iso: string) => {
 }
 
 export function ReservationsBoard({ reservations }: { reservations: AdminReservation[] }) {
+  const { t, intl } = useAdminI18n()
   const router = useRouter()
   const [refreshing, startTransition] = useTransition()
   const [filter, setFilter] = useState<string>('OPEN')
   const [query, setQuery] = useState('')
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const dateTime = (iso: string) =>
+    new Date(iso).toLocaleString(intl, { dateStyle: 'short', timeStyle: 'short' })
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { ALL: reservations.length, OPEN: 0, TODAY: 0 }
@@ -128,12 +110,12 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
       })
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string }
-        setError(data.error ?? 'Aktion fehlgeschlagen.')
+        setError(data.error ?? t.common.error)
         return
       }
       startTransition(() => router.refresh())
     } catch {
-      setError('Aktion fehlgeschlagen.')
+      setError(t.common.error)
     } finally {
       setBusyId(null)
     }
@@ -144,10 +126,14 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl uppercase tracking-luxe text-gold-light">
-            Reservierungen
+            {t.reservations.title}
           </h1>
           <p className="mt-1 text-[12.5px] text-muted">
-            {counts.OPEN} zu bestätigen · {counts.TODAY} heute · {counts.SEATED ?? 0} im Haus
+            {fill(t.reservations.summary, {
+              open: counts.OPEN,
+              today: counts.TODAY,
+              seated: counts.SEATED ?? 0,
+            })}
           </p>
         </div>
 
@@ -159,14 +145,14 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Code, Name, Telefon, Tisch"
+            placeholder={t.reservations.searchPlaceholder}
             className="h-10 w-[260px] rounded-lg border border-gold/25 bg-black/40 pl-9 pr-3 text-[13px] text-cream placeholder:text-muted/70 focus:border-gold focus:outline-none"
           />
         </label>
       </div>
 
       <ul className="mt-4 flex flex-wrap gap-2">
-        {FILTERS.map(({ key, label }) => (
+        {FILTERS.map((key) => (
           <li key={key}>
             <button
               type="button"
@@ -178,7 +164,7 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
                   : 'border-gold/25 text-cream/70 hover:border-gold/55 hover:text-gold',
               )}
             >
-              {label}
+              {t.reservations.filters[key]}
               <span className="tabular-nums text-muted">{counts[key] ?? 0}</span>
             </button>
           </li>
@@ -196,7 +182,7 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
 
       {visible.length === 0 ? (
         <p className="card-lux mt-5 p-8 text-center text-[13px] text-muted">
-          Keine Reservierungen in dieser Ansicht.
+          {t.reservations.empty}
         </p>
       ) : (
         <ul className="mt-5 grid gap-3 xl:grid-cols-2">
@@ -212,15 +198,15 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
                         STATUS_STYLE[r.status] ?? 'border-white/20 text-muted',
                       )}
                     >
-                      {STATUS_LABEL[r.status] ?? r.status}
+                      {t.reservations.status[r.status as keyof typeof t.reservations.status] ?? r.status}
                     </span>
                   </p>
                   <p className="mt-1.5 text-[13.5px] text-cream">
-                    {r.guestName} · Tisch {r.tableNumber} · {r.partySize} Pers.
+                    {r.guestName} · {t.reservations.table} {r.tableNumber} · {r.partySize} {t.reservations.persons}
                   </p>
                   <p className="text-[12.5px] text-muted">
                     {dateTime(r.startsAt)} –{' '}
-                    {new Date(r.endsAt).toLocaleTimeString('de-DE', {
+                    {new Date(r.endsAt).toLocaleTimeString(intl, {
                       hour: '2-digit',
                       minute: '2-digit',
                     })}
@@ -243,7 +229,7 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
               )}
 
               <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gold/12 pt-3">
-                <span className="text-[11px] uppercase tracking-luxe text-muted">Anruf:</span>
+                <span className="text-[11px] uppercase tracking-luxe text-muted">{t.reservations.call}:</span>
                 {CALL_ACTIONS.map((a) => (
                   <button
                     key={a.status}
@@ -252,22 +238,22 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
                     onClick={() => post(r.id, { status: a.status, callOutcome: a.outcome })}
                     className="fx-press rounded-md border border-gold/25 px-2.5 py-1 text-[12px] text-cream/80 transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-40"
                   >
-                    {a.label}
+                    {t.reservations.callActions[a.outcome]}
                   </button>
                 ))}
               </div>
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-[11px] uppercase tracking-luxe text-muted">Service:</span>
-                {LATER_ACTIONS.map((a) => (
+                <span className="text-[11px] uppercase tracking-luxe text-muted">{t.reservations.service}:</span>
+                {LATER_ACTIONS.map((status) => (
                   <button
-                    key={a.status}
+                    key={status}
                     type="button"
-                    disabled={busyId === r.id || r.status === a.status}
-                    onClick={() => post(r.id, { status: a.status })}
+                    disabled={busyId === r.id || r.status === status}
+                    onClick={() => post(r.id, { status })}
                     className="fx-press rounded-md border border-gold/25 px-2.5 py-1 text-[12px] text-cream/80 transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-40"
                   >
-                    {a.label}
+                    {t.reservations.serviceActions[status]}
                   </button>
                 ))}
                 {busyId === r.id && (
@@ -279,7 +265,7 @@ export function ReservationsBoard({ reservations }: { reservations: AdminReserva
         </ul>
       )}
 
-      {refreshing && <p className="mt-4 text-[12.5px] text-muted">Aktualisiere…</p>}
+      {refreshing && <p className="mt-4 text-[12.5px] text-muted">{t.common.refreshing}</p>}
     </>
   )
 }

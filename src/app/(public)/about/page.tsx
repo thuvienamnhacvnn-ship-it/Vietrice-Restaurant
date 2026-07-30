@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 import { site } from '@/config/site'
 import { venueStats } from '@/content/restaurant'
-import { galleryItems } from '@/content/gallery'
+import { getPublicGallery } from '@/server/catalogue'
 import { getDictionary, getLocale } from '@/i18n'
 import { Container } from '@/components/ui/Container'
 import { ButtonLink } from '@/components/ui/Button'
@@ -50,7 +50,7 @@ const COPY = {
 } as const
 
 export default async function AboutPage() {
-  const locale = await getLocale()
+  const [locale, galleryItems] = await Promise.all([getLocale(), getPublicGallery()])
   const t = getDictionary(locale)
   const copy = COPY[locale]
   const panorama = galleryItems.find((g) => g.isFeatured) ?? galleryItems[0]
