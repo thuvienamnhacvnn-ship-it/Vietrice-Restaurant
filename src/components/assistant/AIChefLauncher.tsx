@@ -125,15 +125,11 @@ export function AIChefLauncher() {
 
   return (
     <div
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
       className={cn(
         'fixed right-2 z-40 flex flex-col items-end sm:right-4',
         !offset && 'transition-[bottom] duration-500',
         overHero && !offset ? 'bottom-[292px] short:bottom-[262px]' : 'bottom-3 sm:bottom-4',
-        dragging ? 'cursor-grabbing select-none' : 'cursor-grab',
+        dragging && 'select-none',
       )}
       style={offset ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
       title={t.assistant.title}
@@ -159,14 +155,22 @@ export function AIChefLauncher() {
       {!open && (
         <button
           type="button"
-          // Opening is driven by pointerup on the wrapper, which can tell a
-          // click apart from a drag. An onClick here would also fire at the end
-          // of a drag and pop the panel open every time the chef was moved.
+          // Drag and open both live on this button, never on the wrapper. On
+          // the wrapper the pointerup handler also caught clicks inside the
+          // chat panel — closing it reopened it instantly — and pointer capture
+          // there stole events from the chat input.
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           aria-label={`${t.assistant.title} — ${t.assistant.chatNow}`}
           aria-expanded={open}
-          className="group flex flex-col items-center focus:outline-none"
+          className={cn(
+            'group flex flex-col items-center focus:outline-none',
+            dragging ? 'cursor-grabbing' : 'cursor-grab',
+          )}
         >
           <span
             className={cn(
