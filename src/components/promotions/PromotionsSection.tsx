@@ -21,7 +21,7 @@ import { ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { SectionFrame } from '@/components/ui/SectionFrame'
 import { SectionHeading } from '@/components/ui/SectionHeading'
-import { CountdownBoxes, PromoTimeBadge } from './CountdownBoxes'
+import { CountdownBoxes } from './CountdownBoxes'
 
 const CARD_ICON = [Gift, Users, Utensils, Sparkles]
 
@@ -149,15 +149,13 @@ export function PromotionsSection({
               // A promotion the guest cannot see is worse than one that does
               // not fade in, so these render at full opacity.
               <li key={p.id} className="group relative flex flex-col pt-[26px]">
-                {/* Tab fused to the top of the card: oval above, square where it
-                    meets the frame. Sits outside the card's overflow so it can
-                    protrude without being clipped. */}
-                <PromoTimeBadge
-                  label={copy.offerLabel}
-                  endsAtIso={p.endsAtIso}
-                  serverNowIso={serverNowIso}
-                  className="absolute left-1/2 top-0 z-10 -translate-x-1/2"
-                />
+                {/* Name plate fused to the top of the card: oval above, square
+                    where it meets the frame. Sits outside the card's overflow
+                    so it can protrude without being clipped. Carries the combo
+                    name only — the remaining time has its own panel above. */}
+                <span className="absolute left-1/2 top-0 z-10 max-w-[92%] -translate-x-1/2 truncate rounded-t-full border border-b-0 border-gold/40 bg-background-soft px-5 pb-2.5 pt-2 text-center font-display text-[13px] uppercase tracking-luxe text-gold-light shadow-[0_-4px_16px_-6px_rgba(216,174,99,0.35)]">
+                  {p.title}
+                </span>
 
                 <div className="card-lux card-lux-hover flex flex-1 flex-col overflow-hidden">
                 <div className="relative aspect-[16/10] overflow-hidden">
@@ -181,10 +179,7 @@ export function PromotionsSection({
                   />
 
                   <div className="absolute inset-x-4 top-4">
-                    <h3 className="text-shadow-lux font-display text-2xl uppercase tracking-wide text-gold-light">
-                      {p.title}
-                    </h3>
-                    <p className="text-shadow-lux mt-0.5 font-display text-[28px] leading-none text-cream">
+                    <p className="text-shadow-lux font-display text-[30px] leading-none text-cream">
                       {p.discountPercent !== null
                         ? `-${p.discountPercent}%`
                         : p.comboPriceCents !== null
