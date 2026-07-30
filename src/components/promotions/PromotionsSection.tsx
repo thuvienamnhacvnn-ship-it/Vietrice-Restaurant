@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import {
   Award,
   CalendarRange,
+  Crown,
   Gift,
   Heart,
   Percent,
@@ -155,14 +156,19 @@ export function PromotionsSection({
                     how long the campaign name is. The lotus marks are the same
                     ornament used by the section dividers, tying the plate to the
                     card below it. */}
-                <span className="mx-auto mb-3 flex w-[88%] items-center justify-center gap-2 rounded-full border border-gold/40 bg-[linear-gradient(180deg,#1c140b,#100b06)] px-4 py-1.5 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.9)]">
-                  <span aria-hidden className="shrink-0 text-[11px] leading-none text-gold/70">
+                <span className="relative mx-auto mb-3 mt-3 flex w-[74%] items-center justify-center gap-1.5 rounded-full border border-gold/40 bg-[linear-gradient(180deg,#120c06,#080502)] px-3 py-1.5 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.95)]">
+                  {/* Small gold crown perched on the plate */}
+                  <Crown
+                    aria-hidden
+                    className="absolute -top-[11px] left-1/2 h-[15px] w-[15px] -translate-x-1/2 fill-gold text-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
+                  />
+                  <span aria-hidden className="shrink-0 text-[10px] leading-none text-gold/70">
                     ❦
                   </span>
-                  <span className="truncate text-center font-display text-[13px] uppercase tracking-luxe text-gold-light">
+                  <span className="truncate text-center font-display text-[12px] uppercase tracking-luxe text-gold-light">
                     {p.title}
                   </span>
-                  <span aria-hidden className="shrink-0 text-[11px] leading-none text-gold/70">
+                  <span aria-hidden className="shrink-0 text-[10px] leading-none text-gold/70">
                     ❦
                   </span>
                 </span>
@@ -189,12 +195,17 @@ export function PromotionsSection({
                   />
 
                   <div className="absolute inset-x-4 top-4">
-                    <p className="text-shadow-lux font-display text-[30px] leading-none text-cream">
-                      {p.discountPercent !== null
-                        ? `-${p.discountPercent}%`
-                        : p.comboPriceCents !== null
-                          ? formatPrice(p.comboPriceCents, intl)
-                          : ''}
+                    {/* The discount is the hero figure of the card: oversized,
+                        gold-washed and given its own dark halo so it holds up
+                        over any part of the photograph. */}
+                    <p className="font-display text-[46px] font-semibold leading-none [text-shadow:0_2px_18px_rgba(0,0,0,0.95),0_0_38px_rgba(216,174,99,0.35)]">
+                      <span className="bg-[linear-gradient(180deg,#fff6e4_0%,#f2d79f_55%,#d8ae63_100%)] bg-clip-text text-transparent">
+                        {p.discountPercent !== null
+                          ? `-${p.discountPercent}%`
+                          : p.comboPriceCents !== null
+                            ? formatPrice(p.comboPriceCents, intl)
+                            : ''}
+                      </span>
                     </p>
                     <p className="text-shadow-lux mt-1.5 text-[12.5px] text-cream/90">
                       {p.subtitle}
