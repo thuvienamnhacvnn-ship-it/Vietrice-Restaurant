@@ -55,6 +55,7 @@ const COPY: Record<
     seats: string
     tooSmall: string
     noneFree: string
+    otherTimes: string
     summaryTitle: string
     /** Uses {n} and {p} placeholders for table count and party size. */
     fitting: string
@@ -90,6 +91,7 @@ const COPY: Record<
     seats: 'Plätze',
     tooSmall: 'zu klein',
     noneFree: 'Für diese Zeit ist kein passender Tisch frei. Bitte wählen Sie eine andere Uhrzeit.',
+    otherTimes: 'Andere Zeiten',
     summaryTitle: 'Verfügbarkeit zu dieser Zeit',
     fitting: '{n} Tische passen für {p} Personen.',
     trust: [
@@ -128,6 +130,7 @@ const COPY: Record<
     seats: 'seats',
     tooSmall: 'too small',
     noneFree: 'No suitable table is free at this time. Please choose another slot.',
+    otherTimes: 'Other times',
     summaryTitle: 'Availability at this time',
     fitting: '{n} tables fit a party of {p}.',
     trust: [
@@ -166,6 +169,7 @@ const COPY: Record<
     seats: 'chỗ',
     tooSmall: 'quá nhỏ',
     noneFree: 'Không có bàn phù hợp vào giờ này. Vui lòng chọn giờ khác.',
+    otherTimes: 'Giờ khác',
     summaryTitle: 'Tình trạng bàn giờ này',
     fitting: '{n} bàn phù hợp cho {p} người.',
     trust: [
@@ -222,6 +226,14 @@ export function ReservationSection({
     return toDateInput(d)
   }, [serverNowIso])
 
+  /** Seven bookable times centred on the current selection. */
+  const quickSlots = useMemo(() => {
+    const i = timeSlots.indexOf(time)
+    if (i < 0) return timeSlots.slice(0, 7)
+    const start = Math.max(0, Math.min(i - 3, timeSlots.length - 7))
+    return timeSlots.slice(start, start + 7)
+  }, [timeSlots, time])
+
   const anySelectable = tables.some((tb) => isSelectable(tb, partySize))
 
   /** Live counts for the slot summary card under the filter panel. */
@@ -230,12 +242,18 @@ export function ReservationSection({
   const freeSeats = freeTables.reduce((sum, tb) => sum + tb.capacity, 0)
   const fitting = freeTables.filter((tb) => partySize <= tb.capacity).length
 
-  /** Re-query the floor plan for the chosen slot. */
-  const refresh = async () => {
+  /**
+   * Re-query the floor plan for the chosen slot.
+   *
+   * Takes the slot explicitly because `setTime` has not flushed yet when the
+   * quick-time chips call this — reading `time` here would fetch the previous
+   * slot and leave the map disagreeing with the highlighted chip.
+   */
+  const refresh = async (slot: string = time) => {
     setLoading(true)
     setSelected(null)
     try {
-      const params = new URLSearchParams({ date, time, partySize: String(partySize) })
+      const params = new URLSearchParams({ date, time: slot, partySize: String(partySize) })
       const res = await fetch(`/api/tables?${params.toString()}`, { cache: 'no-store' })
       if (!res.ok) throw new Error('lookup failed')
       const data = (await res.json()) as { tables: TableView[]; serverNow: string }
@@ -374,7 +392,7 @@ export function ReservationSection({
                 <p className="mt-0.5 text-right text-[10.5px] text-muted">{wishes.length}/200</p>
               </div>
 
-              <Button size="lg" className="w-full" onClick={refresh} disabled={loading}>
+              <Button size="lg" className="w-full" onClick={() => void refresh()} disabled={loading}>
                 {loading ? t.common.loading : copy.findTable}
               </Button>
             </div>
@@ -486,6 +504,39 @@ export function ReservationSection({
               </div>
             </div>
 
+
+            {/* Quick time jumps, filling the band under the map. Centred on the
+                current slot so the guest can step either side of it without
+                going back to the dropdown; picking one re-queries immediately. */}
+            <div className="mt-3 hidden items-center gap-2 lg:flex">
+              <span className="shrink-0 text-[11px] font-semibold uppercase tracking-luxe text-gold/75">
+                {copy.otherTimes}
+              </span>
+              <div className="flex flex-1 items-center justify-between gap-1.5">
+                {quickSlots.map((slot) => {
+                  const active = slot === time
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => {
+                        setTime(slot)
+                        void refresh(slot)
+                      }}
+                      aria-current={active ? 'true' : undefined}
+                      className={cn(
+                        'fx-press flex-1 rounded-lg border py-1.5 text-center text-[12.5px] font-medium tabular-nums transition-all duration-300',
+                        active
+                          ? 'border-gold bg-gold/15 text-gold-light shadow-gold'
+                          : 'border-gold/20 bg-black/30 text-cream/70 hover:border-gold/50 hover:text-gold',
+                      )}
+                    >
+                      {slot}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
 
             {!anySelectable && (
               <p
