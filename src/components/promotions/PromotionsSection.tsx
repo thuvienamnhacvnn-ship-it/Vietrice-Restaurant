@@ -149,9 +149,22 @@ export function PromotionsSection({
               // A promotion the guest cannot see is worse than one that does
               // not fade in, so these render at full opacity.
               <li key={p.id} className="group relative flex flex-col">
-                {/* Pill name plate, standing free above the card. */}
-                <span className="mx-auto mb-3 max-w-full truncate rounded-full border border-gold/40 bg-[#141210] px-6 py-1.5 text-center font-display text-[13px] uppercase tracking-luxe text-gold-light">
-                  {p.title}
+                {/* Pill name plate, standing free above the card.
+                    Width is a fixed share of the column rather than fitting the
+                    text, so all four plates come out identical regardless of
+                    how long the campaign name is. The lotus marks are the same
+                    ornament used by the section dividers, tying the plate to the
+                    card below it. */}
+                <span className="mx-auto mb-3 flex w-[88%] items-center justify-center gap-2 rounded-full border border-gold/40 bg-[linear-gradient(180deg,#1c140b,#100b06)] px-4 py-1.5 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.9)]">
+                  <span aria-hidden className="shrink-0 text-[11px] leading-none text-gold/70">
+                    ❦
+                  </span>
+                  <span className="truncate text-center font-display text-[13px] uppercase tracking-luxe text-gold-light">
+                    {p.title}
+                  </span>
+                  <span aria-hidden className="shrink-0 text-[11px] leading-none text-gold/70">
+                    ❦
+                  </span>
                 </span>
 
                 <div className="card-lux flex flex-1 flex-col overflow-hidden">
