@@ -32,7 +32,7 @@ const socials = [
 /** Column heading shared by every footer column. */
 function ColumnTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-4 font-body text-[12.5px] font-semibold uppercase tracking-luxe text-gold-light">
+    <h2 className="mb-2.5 font-body text-[11.5px] font-semibold uppercase tracking-luxe text-gold-light">
       {children}
     </h2>
   )
@@ -40,12 +40,12 @@ function ColumnTitle({ children }: { children: React.ReactNode }) {
 
 function LinkList({ items }: { items: { key: string; href: string; label: string }[] }) {
   return (
-    <ul className="space-y-2.5">
+    <ul className="space-y-1.5">
       {items.map((item) => (
         <li key={item.key}>
           <Link
             href={item.href}
-            className="group inline-flex items-center gap-2 text-[13.5px] text-cream/75 transition-colors hover:text-gold"
+            className="group inline-flex items-center gap-1.5 text-[12.5px] text-cream/75 transition-colors hover:text-gold"
           >
             <ChevronRight
               className="h-3.5 w-3.5 shrink-0 text-gold/70 transition-transform group-hover:translate-x-0.5"
@@ -86,8 +86,8 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
         embedded ? 'shrink-0 border-t border-gold/12' : 'border-t border-gold/15',
       )}
     >
-      <Container wide className={cn(embedded ? 'py-6' : 'py-14 lg:py-16')}>
-        <div className={cn('grid gap-8 lg:grid-cols-12', embedded && 'gap-6 lg:gap-5')}>
+      <Container wide className={cn(embedded ? 'py-4' : 'py-14 lg:py-16')}>
+        <div className={cn('grid gap-8 lg:grid-cols-12', embedded && 'gap-4 lg:gap-4')}>
           {/* Brand */}
           <div className="lg:col-span-2">
             <Logo
@@ -116,7 +116,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
           {/* Contact */}
           <div className="lg:col-span-3">
             <ColumnTitle>{t.footer.contactInfo}</ColumnTitle>
-            <ul className="space-y-3 text-[13.5px] text-cream/75">
+            <ul className="space-y-2 text-[13px] text-cream/75">
               <li className="flex items-start gap-2.5">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-hidden />
                 <span>
@@ -150,7 +150,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
               </li>
             </ul>
 
-            <div className="mt-5 rounded-lg border border-gold/20 bg-black/25 px-3.5 py-3">
+            <div className="mt-3 rounded-lg border border-gold/20 bg-black/25 px-3 py-2">
               <p className="text-[12px] font-semibold uppercase tracking-luxe text-gold/85">
                 {t.footer.openingHours}
               </p>
@@ -205,7 +205,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
           {/* Social + reviews */}
           <div className="lg:col-span-2">
             <ColumnTitle>{t.footer.connect}</ColumnTitle>
-            <ul className="flex flex-wrap gap-2.5">
+            <ul className="flex flex-wrap gap-2">
               {socials.map(({ key, href, Icon }) => (
                 <li key={key}>
                   <a
@@ -213,7 +213,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={t.social[key]}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-gold/40 bg-black/35 text-gold transition-all hover:border-gold hover:bg-gold/15 hover:shadow-gold"
+                    className="grid h-9 w-9 place-items-center rounded-full border border-gold/40 bg-black/35 text-gold transition-all hover:border-gold hover:bg-gold/15 hover:shadow-gold"
                   >
                     <Icon className="h-4 w-4" aria-hidden />
                   </a>
@@ -221,7 +221,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
               ))}
             </ul>
 
-            <div className="mt-6">
+            <div className="mt-4">
               <ColumnTitle>{t.footer.reviews}</ColumnTitle>
               <div className="flex items-center gap-2.5">
                 <span className="flex" aria-hidden>
@@ -241,7 +241,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
                   {reviewSummary.score.toFixed(1)}/5
                 </span>
               </div>
-              <p className="mt-1 text-[12.5px] text-muted">
+              <p className="mt-0.5 text-[11.5px] text-muted">
                 {reviewSummary.count}+ {t.footer.reviews.toLowerCase()}
               </p>
             </div>
@@ -250,7 +250,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
           {/* Map — its own column, as in mockup 6 */}
           <div className="lg:col-span-2">
             <ColumnTitle>{t.footer.location}</ColumnTitle>
-            <GoogleMap className={cn('w-full', embedded ? 'h-[150px]' : 'h-[190px]')} />
+            <GoogleMap className={cn('w-full', embedded ? 'h-[122px]' : 'h-[190px]')} />
           </div>
         </div>
 
@@ -262,7 +262,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
         )}
       </Container>
 
-      <div className={cn('border-t border-gold/12', embedded ? 'py-3' : 'py-5')}>
+      <div className={cn('border-t border-gold/12', embedded ? 'py-2' : 'py-5')}>
         <Container wide className="flex flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-[12.5px] text-muted">
             © {new Date().getFullYear()} {site.legalName}. {t.footer.rights}
