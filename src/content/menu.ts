@@ -289,8 +289,24 @@ const HERO_SLUGS = [
 export const menuItems: MenuItemSeed[] = [...signatureMenuItems, ...extraMenuItems].map(
   (item) => {
     const heroIndex = HERO_SLUGS.indexOf(item.slug as (typeof HERO_SLUGS)[number])
-    return heroIndex === -1
-      ? { ...item, isSignature: false }
-      : { ...item, isSignature: true, sortOrder: heroIndex }
+    if (heroIndex === -1) return { ...item, isSignature: false }
+
+    // Point at the clip and the stills cut from it. `npm run video` writes all
+    // three under the dish slug, and they are committed, so this is a fact
+    // about the repository rather than a hopeful default.
+    //
+    // It matters because this module is the fallback the site renders from
+    // when no database is reachable. Leaving `video: null` here meant a
+    // deployment missing DATABASE_URL served a banner of still images while
+    // the files sat right there in /public — a failure that looks like broken
+    // video rather than a missing environment variable.
+    return {
+      ...item,
+      isSignature: true,
+      sortOrder: heroIndex,
+      video: `/videos/${item.slug}.mp4`,
+      poster: `/images/hero/dishes/${item.slug}.jpg`,
+      thumbnail: `/images/dishes/${item.slug}.jpg`,
+    }
   },
 )
