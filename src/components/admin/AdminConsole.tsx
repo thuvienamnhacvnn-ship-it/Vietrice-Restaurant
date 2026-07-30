@@ -2,7 +2,16 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, CalendarClock, CheckCircle2, Clock, Loader2, Phone, Users } from 'lucide-react'
+import {
+  Bell,
+  CalendarClock,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Phone,
+  ShoppingBag,
+  Users,
+} from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/Logo'
@@ -20,6 +29,19 @@ type Reservation = {
 }
 
 type Table = { id: string; number: number; capacity: number; status: string }
+
+type Order = {
+  id: string
+  code: string
+  guestName: string
+  guestPhone: string
+  pickupAt: string
+  status: string
+  paymentStatus: string
+  totalCents: number
+  notes: string | null
+  items: { name: string; quantity: number }[]
+}
 
 const RES_STATUS: Record<string, string> = {
   PENDING: 'border-warning/50 bg-warning/10 text-warning',
@@ -42,6 +64,24 @@ const CALL_ACTIONS = [
 
 const TABLE_STATES = ['AVAILABLE', 'RESERVED', 'OCCUPIED', 'BLOCKED', 'MAINTENANCE'] as const
 
+/** Kitchen lifecycle for a pickup order, in the order staff actually work it. */
+const ORDER_ACTIONS = [
+  { label: 'Angenommen', status: 'CONFIRMED' },
+  { label: 'In Zubereitung', status: 'PREPARING' },
+  { label: 'Abholbereit', status: 'READY_FOR_PICKUP' },
+  { label: 'Abgeholt', status: 'COMPLETED' },
+  { label: 'Storniert', status: 'CANCELLED' },
+] as const
+
+const ORDER_STATUS: Record<string, string> = {
+  NEW: 'border-warning/50 bg-warning/10 text-warning',
+  CONFIRMED: 'border-gold/50 bg-gold/10 text-gold-light',
+  PREPARING: 'border-gold/50 bg-gold/10 text-gold-light',
+  READY_FOR_PICKUP: 'border-success/50 bg-success/10 text-success',
+  COMPLETED: 'border-white/20 bg-white/5 text-muted',
+  CANCELLED: 'border-danger/50 bg-danger/10 text-danger',
+}
+
 const TABLE_STYLE: Record<string, string> = {
   AVAILABLE: 'border-success/50 bg-success/10 text-success',
   PENDING: 'border-warning/50 bg-warning/10 text-warning',
@@ -56,11 +96,13 @@ export function AdminConsole({
   stats,
   reservations,
   tables,
+  orders,
 }: {
   session: { name: string; role: string }
-  stats: { pending: number; today: number; unread: number; tables: number }
+  stats: { pending: number; today: number; unread: number; tables: number; openOrders: number }
   reservations: Reservation[]
   tables: Table[]
+  orders: Order[]
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -116,8 +158,8 @@ export function AdminConsole({
           {[
             { label: 'Heute', value: stats.today, Icon: CalendarClock },
             { label: 'Offen', value: stats.pending, Icon: Clock },
+            { label: 'Bestellungen', value: stats.openOrders, Icon: ShoppingBag },
             { label: 'Tische', value: stats.tables, Icon: Users },
-            { label: 'Meldungen', value: stats.unread, Icon: Bell },
           ].map(({ label, value, Icon }) => (
             <div key={label} className="card-lux flex items-center gap-3 p-4">
               <span className="grid h-10 w-10 place-items-center rounded-full border border-gold/35 text-gold">
@@ -278,6 +320,93 @@ export function AdminConsole({
             </ul>
           </section>
         </div>
+
+        {/* ---- Pickup orders ---- */}
+        <section className="mt-8">
+          <h2 className="mb-3 font-display text-lg uppercase tracking-luxe text-gold-light">
+            Abholbestellungen
+          </h2>
+
+          {orders.length === 0 ? (
+            <p className="card-lux p-6 text-center text-[13px] text-muted">
+              Keine offenen Bestellungen.
+            </p>
+          ) : (
+            <ul className="grid gap-2.5 lg:grid-cols-2">
+              {orders.map((o) => (
+                <li key={o.id} className="card-lux p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="flex items-center gap-2">
+                        <span className="font-display text-lg text-gold-light">{o.code}</span>
+                        <span
+                          className={cn(
+                            'rounded border px-2 py-0.5 text-[10px] uppercase tracking-luxe',
+                            ORDER_STATUS[o.status] ?? 'border-white/20 text-muted',
+                          )}
+                        >
+                          {o.status}
+                        </span>
+                        {o.paymentStatus !== 'PAID' && (
+                          <span className="rounded border border-danger/40 px-2 py-0.5 text-[10px] uppercase tracking-luxe text-danger">
+                            Unbezahlt
+                          </span>
+                        )}
+                      </p>
+                      <p className="mt-1 text-[13.5px] text-cream">
+                        {o.guestName} ·{' '}
+                        {new Date(o.pickupAt).toLocaleString('de-DE', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        })}{' '}
+                        · {(o.totalCents / 100).toFixed(2)} €
+                      </p>
+                      <p className="mt-0.5 text-[12.5px] text-muted">
+                        {o.items.map((i) => `${i.quantity}× ${i.name}`).join(' · ')}
+                        {o.notes ? ` — ${o.notes}` : ''}
+                      </p>
+                    </div>
+
+                    <a
+                      href={`tel:${o.guestPhone.replace(/\s/g, '')}`}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-gold/40 px-3 py-1.5 text-[12.5px] text-gold hover:bg-gold/10"
+                    >
+                      <Phone className="h-3.5 w-3.5" aria-hidden />
+                      {o.guestPhone}
+                    </a>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2 border-t border-gold/12 pt-3">
+                    {ORDER_ACTIONS.map((a) => (
+                      <button
+                        key={a.status}
+                        type="button"
+                        disabled={busyId === o.id || o.status === a.status}
+                        onClick={() =>
+                          post(
+                            '/api/admin/orders',
+                            // Handing the food over is also when the guest pays
+                            // at the counter, so that single click records both.
+                            a.status === 'COMPLETED'
+                              ? { orderId: o.id, status: a.status, paymentStatus: 'PAID' }
+                              : { orderId: o.id, status: a.status },
+                            o.id,
+                          )
+                        }
+                        className="fx-press rounded-md border border-gold/25 px-2.5 py-1 text-[12px] text-cream/80 transition-colors hover:border-gold/60 hover:text-gold disabled:opacity-40"
+                      >
+                        {a.label}
+                      </button>
+                    ))}
+                    {busyId === o.id && (
+                      <Loader2 className="h-4 w-4 animate-spin self-center text-gold" aria-hidden />
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         {pending && (
           <p className="mt-4 flex items-center gap-2 text-[12.5px] text-muted">

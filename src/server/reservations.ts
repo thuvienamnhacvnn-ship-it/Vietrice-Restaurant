@@ -128,7 +128,8 @@ export async function createReservation(
             type: 'RESERVATION_NEW',
             title: `Neue Reservierung ${code}`,
             body: `${data.guestName} · Tisch ${table.number} · ${data.partySize} Personen`,
-            link: `/admin/reservations/${reservation.id}`,
+            // The console is one page; there is no per-reservation route yet.
+            link: '/admin',
             meta: { reservationId: reservation.id, tableNumber: table.number },
           },
         })
