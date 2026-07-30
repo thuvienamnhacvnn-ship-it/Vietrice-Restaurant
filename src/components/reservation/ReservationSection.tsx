@@ -240,10 +240,10 @@ export function ReservationSection({
       aria-labelledby="reservation-heading"
       className="border-t border-gold/10 bg-background"
     >
-      <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
-        <div className="grid flex-1 gap-5 xl:min-h-0 xl:grid-cols-[262px_minmax(0,1fr)_256px] xl:grid-rows-[minmax(0,1fr)_auto] xl:gap-x-10 xl:gap-y-4 2xl:gap-x-14">
+      <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-6 lg:pt-[104px]">
+        <div className="grid flex-1 gap-5 xl:min-h-0 xl:grid-cols-[262px_minmax(0,1fr)_256px] xl:grid-rows-[minmax(0,1fr)_auto] xl:items-stretch xl:gap-x-10 xl:gap-y-4 2xl:gap-x-14">
           {/* ---- Filter panel ---- */}
-          <div>
+          <div className="flex min-h-0 flex-col">
             <h2
               id="reservation-heading"
               className="font-display text-[30px] uppercase leading-none tracking-wider text-gold-gradient sm:text-[38px]"
@@ -367,7 +367,7 @@ export function ReservationSection({
 
           {/* ---- Floor plan ---- */}
           <div>
-            <ul className="mb-3 flex flex-wrap items-center justify-center gap-5 text-[12.5px]">
+            <ul className="mb-3 flex shrink-0 flex-wrap items-center justify-center gap-5 text-[12.5px]">
               <li className="flex items-center gap-2">
                 <span className="grid h-5 w-5 place-items-center rounded-full bg-success text-white">
                   <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
@@ -386,14 +386,14 @@ export function ReservationSection({
               </li>
             </ul>
 
-            <div className="relative overflow-hidden rounded-2xl border border-gold/20 px-12 py-5 sm:px-16 sm:py-7 lg:py-3">
+            <div className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-2xl border border-gold/20 px-12 py-5 sm:px-16 sm:py-7 xl:py-6">
               {/* Dining-room floor: planks, side rails with banquette seating,
                   and corner foliage — see FloorDecor for why it is drawn
                   rather than cropped from the mockup. */}
               <FloorDecor />
 
               <div
-                className="relative space-y-5 sm:space-y-8 xl:space-y-10"
+                className="relative flex w-full flex-col justify-between gap-5 sm:gap-8 xl:h-full xl:gap-0"
                 role="radiogroup"
                 aria-label={copy.chooseTable}
               >

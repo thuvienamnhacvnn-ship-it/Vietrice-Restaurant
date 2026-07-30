@@ -55,12 +55,12 @@ export function FloorDecor() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl">
       {/* Plank floor */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_78%_62%_at_50%_40%,#4a3520,#2a1d12_58%,#120c07_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_82%_66%_at_50%_42%,#3a2410,#2a190c_55%,#150d06_100%)]" />
       <div className="absolute inset-0 opacity-[0.5] bg-[repeating-linear-gradient(0deg,rgba(0,0,0,0.42)_0px,rgba(0,0,0,0.42)_1px,transparent_1px,transparent_34px)]" />
       <div className="absolute inset-0 opacity-[0.22] bg-[repeating-linear-gradient(0deg,rgba(216,174,99,0.16)_0px,rgba(216,174,99,0.16)_1px,transparent_2px,transparent_34px)]" />
 
       {/* Warm pool of light in the centre, vignette at the edges */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_58%_46%_at_50%_44%,rgba(216,174,99,0.13),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_58%_46%_at_50%_44%,rgba(216,174,99,0.055),transparent_72%)]" />
       <div className="absolute inset-0 shadow-[inset_0_0_120px_60px_rgba(0,0,0,0.72)]" />
 
       <SideRail side="left" />

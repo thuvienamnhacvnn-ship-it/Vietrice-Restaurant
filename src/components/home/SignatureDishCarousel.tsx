@@ -64,9 +64,9 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
 
   return (
     <div className="relative">
-      <h2 className="mb-3 font-display text-lg tracking-luxe text-gold-light sm:text-xl short:mb-2">
-        {t.hero.signatureDishes}
-      </h2>
+      {/* The strip is labelled for assistive tech but carries no visible
+          heading — the reference banner has none. */}
+      <h2 className="sr-only">{t.hero.signatureDishes}</h2>
 
       <div
         ref={listRef}
@@ -168,7 +168,9 @@ export function SignatureDishCarousel({ dishes, activeSlug, onSelect }: Props) {
           }}
           aria-label={dir === 1 ? t.common.next : t.common.previous}
           className={cn(
-            'fx-press absolute top-[calc(1.9rem+((100%-1.9rem-92px)/2))] z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full shadow-[0_6px_18px_rgba(0,0,0,0.75)]',
+            // Centred on the cards' image band: total height minus the text
+            // block, halved. No heading offset any more.
+            'fx-press absolute top-[calc((100%-92px)/2)] z-20 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full shadow-[0_6px_18px_rgba(0,0,0,0.75)]',
             'border border-gold/50 bg-black/65 text-gold backdrop-blur-md transition-all duration-300',
             'hover:border-gold hover:bg-gold/15 hover:text-gold-light',
             dir === 1 ? 'right-[22px]' : 'left-[22px]',

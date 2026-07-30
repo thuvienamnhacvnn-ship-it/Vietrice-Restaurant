@@ -32,16 +32,16 @@ export function TableGraphic({
 
   const wood =
     tone === 'busy'
-      ? { a: '#241610', b: '#3d2418' }
+      ? { a: '#2b1d17', b: '#463229' }
       : tone === 'pending'
         ? { a: '#4a361b', b: '#6f5228' }
         : tone === 'selected'
-          ? { a: '#7d5729', b: '#b3843e' }
+          ? { a: '#6b5228', b: '#9c7c46' }
           : // Free tables sit brighter than busy ones, so the room reads at a glance.
-            { a: '#63431f', b: '#9a6c33' }
+            { a: '#4b3c2c', b: '#7a6853' }
 
-  const chairFill = occupied ? '#2a1a12' : '#54381f'
-  const chairEdge = occupied ? '#5e3728' : '#9c7038'
+  const chairFill = occupied ? '#2a1f18' : '#463628'
+  const chairEdge = occupied ? '#5b4038' : '#8a7458'
 
   /** Seat angles around the table, 0 = top. */
   const angles = Array.from({ length: seats }, (_, i) => (360 / seats) * i)

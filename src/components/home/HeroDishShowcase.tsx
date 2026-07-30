@@ -104,27 +104,24 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
             </span>
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={active.slug}
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {/* Warm cream-to-gold wash, as in the reference. */}
-              <h1 className="text-shadow-lux bg-[linear-gradient(180deg,#fbf3e2_0%,#f0d9a8_58%,#d8ae63_100%)] bg-clip-text font-display text-[34px] font-light leading-[1.08] text-transparent sm:text-[44px] lg:text-[50px] short:text-[40px]">
-                {t.hero.titleLine1}
-              </h1>
-              <p className="text-shadow-lux mt-1 font-script text-[32px] leading-tight text-gold-light sm:text-[40px] lg:text-[46px] short:text-[36px]">
-                {t.hero.titleLine2}
-              </p>
+          {/* Plain markup, deliberately. This copy no longer changes with the
+              selected dish, so the keyed AnimatePresence that used to wrap it
+              re-ran on every switch for nothing — and when the animation froze
+              part-way (the same failure that left promotion cards invisible)
+              it took the headline with it. Static content, always visible. */}
+          <div>
+            {/* Warm cream-to-gold wash, as in the reference. */}
+            <h1 className="text-shadow-lux bg-[linear-gradient(180deg,#fbf3e2_0%,#f0d9a8_58%,#d8ae63_100%)] bg-clip-text font-display text-[34px] font-light leading-[1.08] text-transparent sm:text-[44px] lg:text-[50px] short:text-[40px]">
+              {t.hero.titleLine1}
+            </h1>
+            <p className="text-shadow-lux mt-1 font-script text-[32px] leading-tight text-gold-light sm:text-[40px] lg:text-[46px] short:text-[36px]">
+              {t.hero.titleLine2}
+            </p>
 
-              <p className="text-shadow-lux mt-4 whitespace-pre-line text-[15px] leading-relaxed text-cream/90 short:mt-3">
-                {t.hero.subtitle}
-              </p>
-            </motion.div>
-          </AnimatePresence>
+            <p className="text-shadow-lux mt-4 whitespace-pre-line text-[15px] leading-relaxed text-cream/90 short:mt-3">
+              {t.hero.subtitle}
+            </p>
+          </div>
 
           {/* The reference shows only the two CTAs here — the active dish's
               name, price and description live on the carousel card below. */}
