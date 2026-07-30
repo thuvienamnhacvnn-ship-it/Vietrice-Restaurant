@@ -39,6 +39,25 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
     setPlaying(true)
   }, [])
 
+  /**
+   * Move to the next dish, wrapping at the end.
+   *
+   * Driven by the clip finishing rather than a fixed interval, so the cut
+   * lands when the shot is over instead of halfway through it — the clips are
+   * not all the same length, and a timer would truncate the long ones and
+   * stall on the short ones.
+   *
+   * Reads the current slug from the setter argument rather than closing over
+   * `activeSlug`, so the callback stays stable and the <video> element is not
+   * torn down and recreated on every advance.
+   */
+  const advance = useCallback(() => {
+    setActiveSlug((current) => {
+      const index = dishes.findIndex((d) => d.slug === current)
+      return dishes[(index + 1) % dishes.length]?.slug ?? current
+    })
+  }, [dishes])
+
   if (!active) return null
 
   const hasVideo = Boolean(active.video)
@@ -65,6 +84,7 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
             playing={playing}
             muted={muted}
             priority
+            onEnded={advance}
           />
         </motion.div>
       </AnimatePresence>

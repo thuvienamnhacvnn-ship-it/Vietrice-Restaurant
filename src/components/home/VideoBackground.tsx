@@ -16,6 +16,13 @@ export type VideoBackgroundProps = {
   priority?: boolean
   className?: string
   onError?: () => void
+  /**
+   * Called when the clip reaches its end. Supplying this turns looping off —
+   * a looping video never fires `ended`, so the two are mutually exclusive.
+   * A dish with no footage still advances, on a timer, so the carousel cannot
+   * stall on a still frame.
+   */
+  onEnded?: () => void
 }
 
 /**
@@ -35,6 +42,7 @@ export function VideoBackground({
   priority = false,
   className,
   onError,
+  onEnded,
 }: VideoBackgroundProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [failed, setFailed] = useState(false)
@@ -69,6 +77,18 @@ export function VideoBackground({
 
   const showVideo = Boolean(src) && !failed && !reducedMotion
 
+  /**
+   * Advance past a dish that has no playable video.
+   *
+   * Deliberately skipped under reduced motion: someone who asked the system to
+   * stop moving things should not get a slideshow that advances on its own.
+   */
+  useEffect(() => {
+    if (!onEnded || showVideo || !playing || reducedMotion) return
+    const timer = setTimeout(onEnded, 7000)
+    return () => clearTimeout(timer)
+  }, [onEnded, showVideo, playing, reducedMotion, src])
+
   return (
     <div className={cn('absolute inset-0 overflow-hidden', className)}>
       <Image
@@ -90,11 +110,12 @@ export function VideoBackground({
           src={src ?? undefined}
           poster={poster}
           muted={muted}
-          loop
+          loop={!onEnded}
           playsInline
           preload="metadata"
           aria-hidden
           onCanPlay={() => setReady(true)}
+          onEnded={onEnded}
           onError={() => {
             setFailed(true)
             onError?.()
