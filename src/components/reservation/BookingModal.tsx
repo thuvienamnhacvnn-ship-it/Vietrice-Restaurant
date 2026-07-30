@@ -260,7 +260,7 @@ export function BookingModal({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 30, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-            className="relative z-10 max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-2xl border border-gold/25 bg-background-soft p-5 sm:rounded-2xl sm:p-7"
+            className="relative z-10 max-h-[92svh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-2xl border border-gold/25 bg-background-soft p-5 pb-[calc(20px+env(safe-area-inset-bottom))] sm:max-h-[92vh] sm:rounded-2xl sm:p-7 sm:pb-7"
           >
             <button
               type="button"

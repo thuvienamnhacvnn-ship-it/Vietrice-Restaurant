@@ -8,6 +8,7 @@ import { MessageCircle } from 'lucide-react'
 
 import { useT } from '@/i18n/provider'
 import { cn } from '@/lib/utils'
+import { useMobileActionBarHeight } from '@/hooks/useMobileActionBar'
 import { AIChatPanel } from './AIChatPanel'
 
 /**
@@ -20,6 +21,7 @@ const DRAG_THRESHOLD = 5
 
 export function AIChefLauncher() {
   const t = useT()
+  const barHeight = useMobileActionBarHeight()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const [hovered, setHovered] = useState(false)
@@ -131,7 +133,12 @@ export function AIChefLauncher() {
         overHero && !offset ? 'bottom-[292px] short:bottom-[262px]' : 'bottom-3 sm:bottom-4',
         dragging && 'select-none',
       )}
-      style={offset ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : undefined}
+      style={{
+        ...(offset ? { transform: `translate(${offset.x}px, ${offset.y}px)` } : null),
+        // Lift clear of a page's fixed bottom bar. Only applies below `lg`,
+        // where such bars exist; the dragged position wins over both.
+        ...(barHeight && !offset ? { marginBottom: barHeight } : null),
+      }}
       title={t.assistant.title}
     >
       <AnimatePresence>

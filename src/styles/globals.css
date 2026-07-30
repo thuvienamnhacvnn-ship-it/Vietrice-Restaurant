@@ -62,6 +62,36 @@
     background-attachment: fixed;
   }
 
+  /* ---- Touch devices -----------------------------------------------------
+     iOS Safari zooms the page whenever a focused field's text is under 16px,
+     and it does not zoom back out. A guest filling in the booking form would
+     be left panned sideways with the Submit button off screen, so every
+     control gets 16px on phones regardless of its design size. Larger text on
+     a small screen is the right call anyway. */
+  @media (max-width: 1023px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* The grey flash on tap reads as a rendering fault on a dark luxury theme.
+     Removing it is only safe because every interactive element here has its
+     own :active / focus-visible state. */
+  @media (hover: none) {
+    a,
+    button,
+    [role='button'] {
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+
+  /* Pull-to-refresh inside a scrolled panel drags the whole page instead. */
+  body {
+    overscroll-behavior-y: none;
+  }
+
   h1,
   h2,
   h3,

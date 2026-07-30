@@ -6,7 +6,7 @@ import { CalendarDays, CheckCircle2, Clock, Phone, ShieldCheck, Users, XCircle }
 
 import { RESERVATION_DEFAULTS } from '@/content/tables'
 import { site } from '@/config/site'
-import type { Locale } from '@/i18n/config'
+import { intlTag, type Locale } from '@/i18n/config'
 import { useI18n } from '@/i18n/provider'
 import {
   buildTimeSlots,
@@ -16,6 +16,7 @@ import {
   type TableView,
 } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
+import { useMobileActionBar } from '@/hooks/useMobileActionBar'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { SectionFrame } from '@/components/ui/SectionFrame'
@@ -216,6 +217,16 @@ export function ReservationSection({
   const [nowIso, setNowIso] = useState(serverNowIso)
   const [loading, setLoading] = useState(false)
   const [selected, setSelected] = useState<TableView | null>(null)
+
+  useMobileActionBar(Boolean(selected))
+
+  /** `2026-07-30` is a database value; guests read `30. Juli 2026`. */
+  const dateLabel = useMemo(() => {
+    const parsed = new Date(`${date}T00:00:00`)
+    return Number.isNaN(parsed.getTime())
+      ? date
+      : parsed.toLocaleDateString(intlTag[locale], { day: 'numeric', month: 'long', year: 'numeric' })
+  }, [date, locale])
   const [modalOpen, setModalOpen] = useState(false)
 
   const timeSlots = useMemo(() => buildTimeSlots(), [])
@@ -273,7 +284,7 @@ export function ReservationSection({
       aria-labelledby="reservation-heading"
       className="border-t border-gold/10 bg-background"
     >
-      <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-6 lg:pt-[104px]">
+      <Container wide className="flex h-full flex-col justify-center py-10 pb-28 sm:py-14 xl:pb-6 xl:pt-[104px]">
         <div className="grid flex-1 gap-5 xl:min-h-0 xl:grid-cols-[262px_minmax(0,1fr)_256px] xl:grid-rows-[minmax(0,1fr)_auto] xl:items-stretch xl:gap-x-10 xl:gap-y-4 2xl:gap-x-14">
           {/* ---- Filter panel ---- */}
           <div className="flex min-h-0 flex-col">
@@ -499,6 +510,7 @@ export function ReservationSection({
                             blocked: copy.blocked,
                             seats: copy.seats,
                             tooSmall: copy.tooSmall,
+                            table: copy.table,
                           }}
                         />
                       ))}
@@ -575,7 +587,7 @@ export function ReservationSection({
                   <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-hidden />
                   <div>
                     <dt className="text-muted">{copy.date}</dt>
-                    <dd className="text-cream/85">{date}</dd>
+                    <dd className="text-cream/85">{dateLabel}</dd>
                   </div>
                 </div>
                 <div className="flex items-start gap-2.5">
@@ -641,6 +653,28 @@ export function ReservationSection({
 
   
       </Container>
+
+      {/* Mobile: the floor plan sits between the date picker and the summary,
+          so tapping a table leaves the booking button somewhere below the fold.
+          This keeps the confirmation one thumb-reach away from the choice. */}
+      {selected && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gold/25 bg-background-soft/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur-md xl:hidden">
+          <div className="flex items-center gap-3">
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13px] text-gold-light">
+                {copy.table} {selected.number}
+              </span>
+              <span className="block truncate text-[11.5px] text-muted">
+                {dateLabel} · {time} · {partySize}{' '}
+                {partySize === 1 ? t.common.person : t.common.persons}
+              </span>
+            </span>
+            <Button size="lg" className="shrink-0" onClick={() => setModalOpen(true)}>
+              {copy.continue}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <BookingModal
         open={modalOpen}

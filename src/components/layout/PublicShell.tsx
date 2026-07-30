@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 
 import { useT } from '@/i18n/provider'
 import { AIChefLauncher } from '@/components/assistant/AIChefLauncher'
+import { MobileCartBar } from '@/components/order/MobileCartBar'
 import { Footer } from './Footer'
 import { Header } from './Header'
 import { SectionDots } from './SectionDots'
@@ -34,6 +35,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       {!footerIsInPage && <Footer />}
       <SectionDots />
       <SocialRail />
+      <MobileCartBar />
       <AIChefLauncher />
     </>
   )

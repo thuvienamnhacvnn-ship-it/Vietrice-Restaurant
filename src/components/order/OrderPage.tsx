@@ -1,8 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { CheckCircle2, Loader2, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
+import { CheckCircle2, Loader2, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
 
 import type { MenuCategorySeed, MenuItemSeed } from '@/content/menu'
 import { useI18n } from '@/i18n/provider'
@@ -10,6 +10,7 @@ import { localizedDescription, localizedName, localizedSubtitle } from '@/lib/di
 import { buildTimeSlots } from '@/lib/reservation'
 import { cn, formatPrice } from '@/lib/utils'
 import { cartSubtotalCents, lineTotalCents, useCart } from '@/store/cart'
+import { useMobileActionBar } from '@/hooks/useMobileActionBar'
 import { Button } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 
@@ -33,6 +34,9 @@ const COPY = {
     successBody: 'Wir bereiten Ihre Bestellung vor und rufen Sie bei Rückfragen an.',
     yourCode: 'Ihre Bestellnummer',
     soldOut: 'Ausverkauft',
+    viewCart: 'Warenkorb ansehen',
+    items: 'Artikel',
+    closeCart: 'Schließen',
   },
   en: {
     title: 'Order online',
@@ -53,6 +57,9 @@ const COPY = {
     successBody: 'We are preparing your order and will call if anything is unclear.',
     yourCode: 'Your order number',
     soldOut: 'Sold out',
+    viewCart: 'View basket',
+    items: 'items',
+    closeCart: 'Close',
   },
   vi: {
     title: 'Đặt món online',
@@ -73,6 +80,9 @@ const COPY = {
     successBody: 'Chúng tôi đang chuẩn bị và sẽ gọi nếu cần xác nhận thêm.',
     yourCode: 'Mã đơn hàng',
     soldOut: 'Hết món',
+    viewCart: 'Xem giỏ hàng',
+    items: 'món',
+    closeCart: 'Đóng',
   },
 } as const
 
@@ -95,12 +105,27 @@ export function OrderPage({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [orderCode, setOrderCode] = useState<string | null>(null)
+  /** Mobile only: the cart is a sheet rather than a column beside the menu. */
+  const [cartOpen, setCartOpen] = useState(false)
 
   const slots = useMemo(() => buildTimeSlots(), [])
   const visible = items.filter((i) =>
     category === 'empfehlung' ? i.isSignature : i.category === category,
   )
   const subtotal = cartSubtotalCents(lines)
+  const itemCount = lines.reduce((n, l) => n + l.quantity, 0)
+
+  useMobileActionBar(lines.length > 0 && !cartOpen)
+
+  // A sheet you can scroll *past* feels broken; lock the page behind it.
+  useEffect(() => {
+    if (!cartOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [cartOpen])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,6 +156,7 @@ export function OrderPage({
         return
       }
       setOrderCode(data.code ?? null)
+      setCartOpen(false)
       clear()
     } catch {
       setError('Bestellung fehlgeschlagen.')
@@ -156,7 +182,7 @@ export function OrderPage({
   }
 
   return (
-    <Container wide className="py-12 lg:py-16">
+    <Container wide className="py-8 pb-28 sm:py-12 lg:py-16 lg:pb-16">
       <h1 className="font-display text-[34px] uppercase leading-tight tracking-wider text-gold-gradient sm:text-[42px]">
         {copy.title}
       </h1>
@@ -171,14 +197,14 @@ export function OrderPage({
       <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_380px]">
         {/* ---- Menu ---- */}
         <div>
-          <ul className="mb-4 flex flex-wrap gap-2">
+          <ul className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
             {categories.map((c) => (
-              <li key={c.slug}>
+              <li key={c.slug} className="shrink-0">
                 <button
                   type="button"
                   onClick={() => setCategory(c.slug)}
                   className={cn(
-                    'fx-press rounded-full border px-3.5 py-1.5 text-[12px] uppercase tracking-luxe transition-colors',
+                    'fx-press min-h-[38px] rounded-full border px-4 py-2 text-[12px] uppercase tracking-luxe transition-colors sm:min-h-0 sm:px-3.5 sm:py-1.5',
                     c.slug === category
                       ? 'border-gold bg-gold/12 text-gold-light'
                       : 'border-gold/25 text-cream/70 hover:border-gold/55 hover:text-gold',
@@ -223,6 +249,7 @@ export function OrderPage({
                     </span>
                     <Button
                       size="sm"
+                      className="h-10 px-5 text-[11.5px] sm:h-8 sm:px-4 sm:text-[10.5px]"
                       disabled={!item.isAvailable}
                       onClick={() =>
                         addLine({
@@ -245,8 +272,30 @@ export function OrderPage({
           </ul>
         </div>
 
-        {/* ---- Cart + checkout ---- */}
-        <div className="card-lux h-fit p-4 lg:sticky lg:top-[calc(var(--header-h)+16px)]">
+        {/* ---- Cart + checkout ----
+            Desktop: a sticky column beside the menu.
+            Mobile: a sheet over the menu, because a cart below a long list is
+            a cart nobody sees — you add a dish and nothing appears to happen. */}
+        <div
+          id="order-cart"
+          className={cn(
+            'card-lux p-4 lg:sticky lg:top-[calc(var(--header-h)+16px)] lg:h-fit',
+            'max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-50 max-lg:max-h-[86svh]',
+            'max-lg:overflow-y-auto max-lg:overscroll-contain max-lg:rounded-b-none',
+            'max-lg:pb-[calc(16px+env(safe-area-inset-bottom))] max-lg:transition-transform',
+            'max-lg:duration-300 max-lg:ease-out',
+            cartOpen ? 'max-lg:translate-y-0' : 'max-lg:translate-y-full',
+          )}
+          aria-hidden={undefined}
+        >
+          <button
+            type="button"
+            onClick={() => setCartOpen(false)}
+            aria-label={copy.closeCart}
+            className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full border border-gold/30 text-gold lg:hidden"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
           <h2 className="flex items-center gap-2 font-display text-lg uppercase tracking-luxe text-gold-light">
             <ShoppingBag className="h-4 w-4" aria-hidden />
             {copy.cart}
@@ -269,28 +318,28 @@ export function OrderPage({
                       type="button"
                       aria-label="−"
                       onClick={() => setQuantity(l.lineId, l.quantity - 1)}
-                      className="grid h-6 w-6 place-items-center rounded border border-gold/30 text-gold hover:bg-gold/10"
+                      className="grid h-9 w-9 place-items-center rounded border border-gold/30 text-gold hover:bg-gold/10 lg:h-7 lg:w-7"
                     >
-                      <Minus className="h-3 w-3" aria-hidden />
+                      <Minus className="h-3.5 w-3.5" aria-hidden />
                     </button>
-                    <span className="w-5 text-center text-[13px] tabular-nums text-cream">
+                    <span className="w-6 text-center text-[14px] tabular-nums text-cream">
                       {l.quantity}
                     </span>
                     <button
                       type="button"
                       aria-label="+"
                       onClick={() => setQuantity(l.lineId, l.quantity + 1)}
-                      className="grid h-6 w-6 place-items-center rounded border border-gold/30 text-gold hover:bg-gold/10"
+                      className="grid h-9 w-9 place-items-center rounded border border-gold/30 text-gold hover:bg-gold/10 lg:h-7 lg:w-7"
                     >
-                      <Plus className="h-3 w-3" aria-hidden />
+                      <Plus className="h-3.5 w-3.5" aria-hidden />
                     </button>
                     <button
                       type="button"
                       aria-label="Entfernen"
                       onClick={() => removeLine(l.lineId)}
-                      className="ml-1 grid h-6 w-6 place-items-center rounded border border-danger/30 text-danger hover:bg-danger/10"
+                      className="ml-1 grid h-9 w-9 place-items-center rounded border border-danger/30 text-danger hover:bg-danger/10 lg:h-7 lg:w-7"
                     >
-                      <Trash2 className="h-3 w-3" aria-hidden />
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden />
                     </button>
                   </span>
                 </li>
@@ -375,6 +424,37 @@ export function OrderPage({
           </form>
         </div>
       </div>
+
+      {/* Dim the menu behind the open sheet and give a tap-anywhere escape. */}
+      {cartOpen && (
+        <button
+          type="button"
+          aria-label={copy.closeCart}
+          onClick={() => setCartOpen(false)}
+          className="fixed inset-0 z-40 bg-black/65 backdrop-blur-[2px] lg:hidden"
+        />
+      )}
+
+      {/* Persistent summary bar: the running total stays in view while the
+          guest browses, which is the whole point of ordering on a phone. */}
+      {lines.length > 0 && !cartOpen && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gold/25 bg-background-soft/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur-md lg:hidden">
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            className="fx-press flex h-12 w-full items-center justify-between rounded-lg border border-gold/55 bg-gold/12 px-4 text-gold-light"
+          >
+            <span className="flex items-center gap-2 text-[13px]">
+              <ShoppingBag className="h-4 w-4" aria-hidden />
+              {itemCount} {copy.items}
+            </span>
+            <span className="flex items-center gap-3">
+              <span className="font-display text-lg">{formatPrice(subtotal, intl)}</span>
+              <span className="text-[12px] uppercase tracking-luxe">{copy.viewCart}</span>
+            </span>
+          </button>
+        </div>
+      )}
     </Container>
   )
 }

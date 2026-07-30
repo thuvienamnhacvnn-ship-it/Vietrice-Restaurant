@@ -72,6 +72,8 @@ export function TableCard({
     pending: string
     blocked: string
     seats: string
+    /** Localised word for "table", used in the accessible name. */
+    table: string
     tooSmall: string
   }
 }) {
@@ -96,7 +98,7 @@ export function TableCard({
       aria-checked={selected}
       disabled={!selectable}
       onClick={() => selectable && onSelect(table)}
-      aria-label={`Tisch ${table.number}, ${table.capacity} ${labels.seats}, ${statusLabel}`}
+      aria-label={`${labels.table} ${table.number}, ${table.capacity} ${labels.seats}, ${statusLabel}`}
       className={cn(
         'fx-press group relative aspect-square w-full rounded-2xl p-1 ring-2 transition-all duration-300',
         STATUS_RING[table.status],
