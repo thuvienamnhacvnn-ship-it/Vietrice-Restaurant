@@ -148,17 +148,22 @@ export function PromotionsSection({
               // 0.38 / 0 opacity across the row) inside the snap-scrolled page.
               // A promotion the guest cannot see is worse than one that does
               // not fade in, so these render at full opacity.
-              <li key={p.id} className="group relative flex flex-col pt-[26px]">
-                {/* Name plate fused to the top of the card: oval above, square
-                    where it meets the frame. Sits outside the card's overflow
-                    so it can protrude without being clipped. Carries the combo
-                    name only — the remaining time has its own panel above. */}
-                <span className="absolute left-1/2 top-0 z-10 max-w-[92%] -translate-x-1/2 truncate rounded-t-full border border-b-0 border-gold/40 bg-background-soft px-5 pb-2.5 pt-2 text-center font-display text-[13px] uppercase tracking-luxe text-gold-light shadow-[0_-4px_16px_-6px_rgba(216,174,99,0.35)]">
+              <li key={p.id} className="fx-lift group relative flex flex-col pt-[30px]">
+                {/* Name plate genuinely fused to the card, not laid over it.
+                    Three things make the join read as one shape:
+                      - it carries no bottom border, so nothing closes it off;
+                      - it extends a few pixels past the card's top edge, and
+                        its fill is opaque, so it erases the segment of the
+                        card's top border it straddles;
+                      - that fill is the card's own rendered colour (surface at
+                        78% over the page background), so the two read as a
+                        single continuous panel rather than two stacked ones. */}
+                <span className="absolute left-1/2 top-0 z-10 max-w-[88%] -translate-x-1/2 truncate rounded-t-xl border border-b-0 border-gold/25 bg-[#100e0b] px-5 pb-3 pt-2 text-center font-display text-[13px] uppercase tracking-luxe text-gold-light">
                   {p.title}
                 </span>
 
-                <div className="card-lux card-lux-hover flex flex-1 flex-col overflow-hidden">
-                <div className="relative aspect-[16/10] overflow-hidden">
+                <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-gold/25 bg-[#100e0b] p-1.5">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-[9px]">
                   <Image
                     src={p.image}
                     alt=""
@@ -192,7 +197,7 @@ export function PromotionsSection({
                   </div>
                 </div>
 
-                <div className="flex flex-1 flex-col p-4">
+                <div className="flex flex-1 flex-col px-2.5 pb-2.5 pt-3">
                   <div className="flex items-start gap-2.5">
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-gold/35 text-gold">
                       <Icon className="h-4 w-4" aria-hidden />
