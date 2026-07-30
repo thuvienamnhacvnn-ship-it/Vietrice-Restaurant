@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 
-import { combineDateTime, getDemoTableViews } from '@/lib/reservation'
+import { RESERVATION_DEFAULTS } from '@/content/tables'
+import { combineDateTime } from '@/lib/reservation'
+import { getTableViews } from '@/server/tables'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +28,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid date or time.' }, { status: 400 })
   }
 
-  const tables = getDemoTableViews(slotStart, now)
+  const tables = await getTableViews(slotStart, RESERVATION_DEFAULTS.durationMinutes, now)
 
   return NextResponse.json(
     { tables, serverNow: now.toISOString() },
