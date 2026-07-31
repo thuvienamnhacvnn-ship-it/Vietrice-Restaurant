@@ -9,7 +9,7 @@ import type { Locale } from '@/i18n/config'
 import { useI18n } from '@/i18n/provider'
 import { localizedDescription, localizedName, localizedSubtitle } from '@/lib/dish'
 import { cn, formatPrice } from '@/lib/utils'
-import { Button, ButtonLink } from '@/components/ui/Button'
+import { ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { Logo } from '@/components/ui/Logo'
 import { SignatureDishCarousel } from './SignatureDishCarousel'
@@ -242,22 +242,25 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
             Hiding focusable content from assistive tech would be worse than
             showing it. */}
         <div className="flex justify-center pb-5 short:pb-3">
-          <Button
-            variant="gold"
+          {/* A bare control, not a filled button: a solid gold slab sat on the
+              footage like a form field. Still a real <button> — it toggles,
+              takes focus and carries the expanded state for assistive tech. */}
+          <button
+            type="button"
             onClick={() => setMenuOpen((open) => !open)}
             aria-expanded={menuOpen}
             aria-controls="hero-live-menu"
-            className="min-w-[190px]"
+            className="inline-flex items-center gap-2 px-4 py-2 font-display text-[17px] tracking-wider text-gold drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] transition-colors duration-300 hover:text-gold-light"
           >
             <span>{t.hero.liveMenu}</span>
             <ChevronUp
               aria-hidden
               className={cn(
-                'h-4 w-4 transition-transform duration-300',
+                'h-5 w-5 animate-blink transition-transform duration-300',
                 menuOpen && 'rotate-180',
               )}
             />
-          </Button>
+          </button>
         </div>
       </div>
     </section>

@@ -55,9 +55,9 @@ export const de = {
     titleLine2: 'in the Heart of Berlin',
     subtitle: 'Frische Zutaten. Traditionelle Rezepte.\nEin Geschmack, der verbindet.',
     signatureDishes: 'OUR SIGNATURE DISHES',
-    // Left in English in all three dictionaries, like the two headline lines
-    // above it: it reads as a sign on the wall, not as a sentence.
-    liveMenu: 'LIVE MENU',
+    // One word, identical in all three languages, so it stays a mark on the
+    // banner rather than a label that changes width with the locale.
+    liveMenu: 'Menu',
     scrollHint: 'Nach unten scrollen',
     dishCarouselLabel: 'Signature-Gerichte auswählen',
   },

@@ -74,6 +74,12 @@ const config: Config = {
         shimmer: {
           '100%': { transform: 'translateX(100%)' },
         },
+        /* Never fully off. A true 0 reads as a rendering fault on a dark
+           banner; dipping to a quarter still pulls the eye. */
+        blink: {
+          '0%,100%': { opacity: '1' },
+          '50%': { opacity: '0.25' },
+        },
         /* The ticker track holds two copies of the list, so translating by
            exactly -50% lands back on an identical frame — a seamless loop with
            no JS width measuring. */
@@ -87,6 +93,7 @@ const config: Config = {
         'gold-pulse': 'gold-pulse 2.4s ease-out infinite',
         float: 'float 6s ease-in-out infinite',
         shimmer: 'shimmer 2s infinite',
+        blink: 'blink 1.4s ease-in-out infinite',
       },
     },
   },
