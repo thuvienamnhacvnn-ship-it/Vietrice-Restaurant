@@ -58,7 +58,6 @@ const COPY: Record<
     tooSmall: string
     justFreed: string
     noneFree: string
-    otherTimes: string
     summaryTitle: string
     /** Uses {n} and {p} placeholders for table count and party size. */
     fitting: string
@@ -95,7 +94,6 @@ const COPY: Record<
     tooSmall: 'zu klein',
     justFreed: 'gerade frei',
     noneFree: 'Für diese Zeit ist kein passender Tisch frei. Bitte wählen Sie eine andere Uhrzeit.',
-    otherTimes: 'Andere Zeiten',
     summaryTitle: 'Verfügbarkeit zu dieser Zeit',
     fitting: '{n} Tische passen für {p} Personen.',
     trust: [
@@ -135,7 +133,6 @@ const COPY: Record<
     tooSmall: 'too small',
     justFreed: 'just freed',
     noneFree: 'No suitable table is free at this time. Please choose another slot.',
-    otherTimes: 'Other times',
     summaryTitle: 'Availability at this time',
     fitting: '{n} tables fit a party of {p}.',
     trust: [
@@ -175,7 +172,6 @@ const COPY: Record<
     tooSmall: 'quá nhỏ',
     justFreed: 'vừa trống',
     noneFree: 'Không có bàn phù hợp vào giờ này. Vui lòng chọn giờ khác.',
-    otherTimes: 'Giờ khác',
     summaryTitle: 'Tình trạng bàn giờ này',
     fitting: '{n} bàn phù hợp cho {p} người.',
     trust: [
@@ -241,14 +237,6 @@ export function ReservationSection({
     d.setDate(d.getDate() + RESERVATION_DEFAULTS.maxAdvanceDays)
     return toDateInput(d)
   }, [serverNowIso])
-
-  /** Seven bookable times centred on the current selection. */
-  const quickSlots = useMemo(() => {
-    const i = timeSlots.indexOf(time)
-    if (i < 0) return timeSlots.slice(0, 7)
-    const start = Math.max(0, Math.min(i - 3, timeSlots.length - 7))
-    return timeSlots.slice(start, start + 7)
-  }, [timeSlots, time])
 
   const anySelectable = tables.some((tb) => isSelectable(tb, partySize))
 
@@ -547,38 +535,13 @@ export function ReservationSection({
             </div>
 
 
-            {/* Quick time jumps, filling the band under the map. Centred on the
-                current slot so the guest can step either side of it without
-                going back to the dropdown; picking one re-queries immediately. */}
-            <div className="mt-3 hidden items-center gap-2 lg:flex">
-              <span className="shrink-0 text-[11px] font-semibold uppercase tracking-luxe text-gold/75">
-                {copy.otherTimes}
-              </span>
-              <div className="flex flex-1 items-center justify-between gap-1.5">
-                {quickSlots.map((slot) => {
-                  const active = slot === time
-                  return (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => {
-                        setTime(slot)
-                        void refresh(slot)
-                      }}
-                      aria-current={active ? 'true' : undefined}
-                      className={cn(
-                        'fx-press flex-1 rounded-lg border py-1.5 text-center text-[12.5px] font-medium tabular-nums transition-all duration-300',
-                        active
-                          ? 'border-gold bg-gold/15 text-gold-light shadow-gold'
-                          : 'border-gold/20 bg-black/30 text-cream/70 hover:border-gold/50 hover:text-gold',
-                      )}
-                    >
-                      {slot}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+            {/* The row of quick time jumps used to sit here. It has gone: the
+                map now opens on the current moment and follows the floor as
+                staff work it, so a strip of alternative hours under it invited
+                the guest to step away from the one view that is live. The time
+                dropdown in the filter panel still moves the map for anyone
+                booking a specific hour — this only removes the shortcut that
+                made "some other evening" as prominent as "now". */}
 
             {/* Sits directly under the map and no wider than it. */}
             {showNotice && <NoticeTicker className="mt-3 hidden lg:flex" />}

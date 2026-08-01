@@ -72,6 +72,42 @@ export function buildTimeSlots(): string[] {
   return slots
 }
 
+/**
+ * The slot the booking form should open on.
+ *
+ * This used to be the literal string `'19:00'` on both public pages, and that
+ * one hard-coded hour was the last thing making the guest map and the floor
+ * console look like they disagreed. A table seated at four and due to leave at
+ * six is genuinely free at seven — so the console (which shows the room now)
+ * called it busy while the form (which showed seven o'clock, whatever the time
+ * of day) called it free. Both were right; neither was answering the question
+ * the person comparing them had in mind.
+ *
+ * Opening on the next bookable slot makes the default view a picture of the
+ * room as it stands. Picking a later time still shows that later time
+ * correctly — the difference is that it is now a difference the guest asked
+ * for, rather than one the page invented.
+ *
+ * Before service the first seating is the answer; after the last one there is
+ * nothing bookable left today, so the form opens on tomorrow's first seating —
+ * the caller supplies the date, and this only names the time.
+ */
+export function nextBookableSlot(now: Date): string {
+  const slots = buildTimeSlots()
+  const earliest = now.getTime() + RESERVATION_DEFAULTS.minLeadMinutes * 60_000
+  const minutesNeeded = (() => {
+    const d = new Date(earliest)
+    return d.getHours() * 60 + d.getMinutes()
+  })()
+
+  const found = slots.find((slot) => {
+    const [h, m] = slot.split(':').map(Number)
+    return h * 60 + m >= minutesNeeded
+  })
+
+  return found ?? slots[0] ?? RESERVATION_DEFAULTS.firstSeating
+}
+
 /** `yyyy-mm-dd` for a Date, in local time (not UTC — avoids off-by-one days). */
 export function toDateInput(date: Date): string {
   const y = date.getFullYear()

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { RESERVATION_DEFAULTS } from '@/content/tables'
-import { combineDateTime, toDateInput } from '@/lib/reservation'
+import { combineDateTime, nextBookableSlot, toDateInput } from '@/lib/reservation'
 import { getTableViews } from '@/server/tables'
 import { ReservationSection } from '@/components/reservation/ReservationSection'
 
@@ -29,7 +29,7 @@ export const dynamic = 'force-dynamic'
 export default async function ReservationPage() {
   const now = new Date()
   const date = toDateInput(now)
-  const time = '19:00'
+  const time = nextBookableSlot(now)
   const tables = await getTableViews(
     combineDateTime(date, time),
     RESERVATION_DEFAULTS.durationMinutes,

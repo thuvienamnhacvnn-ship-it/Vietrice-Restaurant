@@ -3,7 +3,7 @@ import { getMenuData, getPublicGallery, getPublicPromotions } from '@/server/cat
 import { getLocale } from '@/i18n'
 import { nextExpiring } from '@/lib/promotions'
 import { RESERVATION_DEFAULTS } from '@/content/tables'
-import { combineDateTime, toDateInput } from '@/lib/reservation'
+import { combineDateTime, nextBookableSlot, toDateInput } from '@/lib/reservation'
 import { getTableViews } from '@/server/tables'
 import { HeroDishShowcase } from '@/components/home/HeroDishShowcase'
 import { AIAssistantSection } from '@/components/assistant/AIAssistantSection'
@@ -41,7 +41,7 @@ export default async function HomePage() {
   // on invented occupancy and disagreed with the console until the client
   // re-queried.
   const date = toDateInput(now)
-  const time = '19:00'
+  const time = nextBookableSlot(now)
   const tables = await getTableViews(
     combineDateTime(date, time),
     RESERVATION_DEFAULTS.durationMinutes,
