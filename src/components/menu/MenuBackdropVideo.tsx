@@ -11,6 +11,9 @@ import { cn } from '@/lib/utils'
  */
 export const DISH_BACKDROP_VIDEOS: Record<string, string> = {
   'banh-xeo': '/videos/banh-xeo-alpha.webm',
+  'sashimi-lachs': '/videos/sashimi-lachs-alpha.webm',
+  'pho-bo-dac-biet': '/videos/pho-bo-dac-biet-alpha.webm',
+  'goi-cuon-tom': '/videos/goi-cuon-tom-alpha.webm',
 }
 
 export function hasBackdropVideo(slug: string): boolean {
