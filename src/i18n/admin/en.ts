@@ -185,8 +185,8 @@ export const en: AdminDictionary = {
     actions: {
       seat: 'Guests in',
       free: 'Guests left',
-      markBusy: 'Busy',
-      markFree: 'Free',
+      markBusy: 'Seat',
+      markFree: 'Free up',
       lock: 'Lock',
       unlock: 'Unlock',
       openEnded: 'No end',

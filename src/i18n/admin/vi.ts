@@ -185,8 +185,8 @@ export const vi: AdminDictionary = {
     actions: {
       seat: 'Khách vào',
       free: 'Khách rời',
-      markBusy: 'Bận',
-      markFree: 'Rảnh',
+      markBusy: 'Đánh bận',
+      markFree: 'Trả bàn',
       lock: 'Khoá bàn',
       unlock: 'Mở khoá',
       openEnded: 'Không hẹn giờ',

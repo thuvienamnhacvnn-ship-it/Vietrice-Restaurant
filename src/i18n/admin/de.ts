@@ -190,8 +190,8 @@ export const de = {
     actions: {
       seat: 'Gäste da',
       free: 'Gäste weg',
-      markBusy: 'Besetzt',
-      markFree: 'Frei',
+      markBusy: 'Besetzen',
+      markFree: 'Freigeben',
       lock: 'Sperren',
       unlock: 'Entsperren',
       openEnded: 'Ohne Ende',

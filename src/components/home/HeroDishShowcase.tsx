@@ -38,6 +38,19 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
   const handleSelect = useCallback((slug: string) => {
     setActiveSlug(slug)
     setPlaying(true)
+    /**
+     * On a touch screen, picking a dish also puts the strip away.
+     *
+     * The trigger is hidden while the strip is open, and a device with no
+     * pointer has no mouse-leave to close it either — so without this the
+     * strip would be a one-way door. Guarded on `(hover: none)` because doing
+     * it everywhere would fight the hover that holds the strip open on a
+     * desktop: the cursor is still inside the wrapper after a click, so it
+     * would reopen the instant it closed.
+     */
+    if (typeof window !== 'undefined' && window.matchMedia?.('(hover: none)').matches) {
+      setMenuOpen(false)
+    }
   }, [])
 
   const openMenu = useCallback(() => setMenuOpen(true), [])
@@ -228,7 +241,12 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
             menuOpen ? 'max-h-[360px] opacity-100' : 'max-h-0 opacity-0',
           )}
         >
-          <div className="px-4 pb-4 sm:px-6 lg:px-8">
+          {/* Sits on the banner's bottom edge rather than floating above it.
+              The trigger row below collapses out of the way while the strip is
+              open, so the only thing under the dishes is the edge of the
+              screen — which is what makes the strip read as part of the
+              banner instead of a panel resting on top of it. */}
+          <div className="px-4 pb-1 sm:px-6 lg:px-8">
             <SignatureDishCarousel
               dishes={dishes}
               activeSlug={active.slug}
@@ -241,16 +259,31 @@ export function HeroDishShowcase({ dishes }: { dishes: SignatureDish[] }) {
             keyboard, and focusing one opens the strip via onFocusCapture.
             Hiding focusable content from assistive tech would be worse than
             showing it. */}
-        <div className="flex justify-center pb-5 short:pb-3">
+        <div
+          className={cn(
+            'flex justify-center transition-[padding] duration-300',
+            menuOpen ? 'pb-0' : 'pb-5 short:pb-3',
+          )}
+        >
           {/* A bare control, not a filled button: a solid gold slab sat on the
               footage like a form field. Still a real <button> — it toggles,
-              takes focus and carries the expanded state for assistive tech. */}
+              takes focus and carries the expanded state for assistive tech.
+
+              While the strip is open the label and chevron go away: they name
+              a thing that is already on screen, and the dishes were the point.
+              `sr-only` rather than `hidden` — the toggle is still the only way
+              a screen-reader user closes the strip, and `focus:not-sr-only`
+              brings it back the moment a keyboard reaches it, so it is never
+              an invisible thing that steals focus. */}
           <button
             type="button"
             onClick={() => setMenuOpen((open) => !open)}
             aria-expanded={menuOpen}
             aria-controls="hero-live-menu"
-            className="inline-flex items-center gap-2 px-4 py-2 font-display text-[17px] tracking-wider text-gold drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] transition-colors duration-300 hover:text-gold-light"
+            className={cn(
+              'inline-flex items-center gap-2 px-4 py-2 font-display text-[17px] tracking-wider text-gold drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] transition-colors duration-300 hover:text-gold-light',
+              menuOpen && 'sr-only focus:not-sr-only',
+            )}
           >
             <span>{t.hero.liveMenu}</span>
             <ChevronUp

@@ -228,16 +228,18 @@ function TableTile({
           occupied={isBusy}
         />
 
-        <span
-          className={cn(
-            'pointer-events-none absolute inset-0 flex items-center justify-center font-display text-[22px] leading-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]',
-            STATE_TEXT[state],
-          )}
-        >
+        {/* The table number, on its own solid chip.
+            Painted over the drawing it was almost unreadable: the numeral took
+            the state colour, and green-on-dark-wood at this size disappeared
+            into the tabletop and the candle behind it. The number is the one
+            thing on this tile staff say out loud, so it gets a background of
+            its own rather than borrowing the plate's. */}
+        <span className="pointer-events-none absolute left-1 top-1 z-10 grid h-[20px] min-w-[20px] place-items-center rounded-md border border-cream/25 bg-black/80 px-1 font-mono text-[12px] font-bold leading-none tabular-nums text-cream">
           {table.number}
         </span>
 
-        <span className="pointer-events-none absolute inset-x-0 top-[64%] text-center text-[9.5px] font-medium text-cream/60 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+        <span className="pointer-events-none absolute bottom-1 right-1 z-10 inline-flex items-center gap-0.5 rounded bg-black/70 px-1 py-[1px] text-[9px] font-medium leading-none text-cream/70">
+          <Users className="h-2 w-2" aria-hidden />
           {table.capacity}
         </span>
 
@@ -273,6 +275,13 @@ function TableTile({
         )}
       </button>
 
+      {/* The label is a verb, and only a verb.
+          It used to read "Besetzt" / "Frei" — the names of the states — which
+          put the word for "free" under a table that was busy and vice versa,
+          because a button says what it does, not what is. Next to a coloured
+          status dot it was a coin-flip which of the two the reader took it
+          for. The dot is gone as well: the ring around the tile already says
+          the state, and the only job left for this control is the change. */}
       <button
         type="button"
         disabled={busy || state === 'locked'}
@@ -284,7 +293,11 @@ function TableTile({
             : 'border-danger/45 bg-danger/10 text-danger hover:bg-danger/20',
         )}
       >
-        <span className={cn('h-1.5 w-1.5 rounded-full', STATE_DOT[state])} aria-hidden />
+        {isBusy ? (
+          <LogOut className="h-3 w-3" aria-hidden />
+        ) : (
+          <LogIn className="h-3 w-3" aria-hidden />
+        )}
         {isBusy ? t.floor.actions.markFree : t.floor.actions.markBusy}
       </button>
     </li>
@@ -319,8 +332,12 @@ export function FloorPlan({
   const cols = useMemo(() => tables.reduce((m, tb) => Math.max(m, tb.gridCol), 1), [tables])
 
   return (
-    <div className="rounded-xl border border-gold/20 bg-black/25 p-3 sm:p-4">
-      <ul className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]">
+    // Capped rather than filling the column. At full width on a desk monitor
+    // each table was drawn the size of a playing card, which reads as a feature
+    // demanding attention; the plan is a reference the manager glances at, and
+    // a glance wants the whole room in one fixation.
+    <div className="w-full max-w-[560px] rounded-xl border border-gold/20 bg-black/25 p-3">
+      <ul className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
         {STATE_ORDER.map((s) => (
           <li key={s} className="flex items-center gap-1.5">
             <span className={cn('h-2.5 w-2.5 rounded-full', STATE_DOT[s])} aria-hidden />
@@ -329,11 +346,11 @@ export function FloorPlan({
         ))}
       </ul>
 
-      <div role="radiogroup" aria-label={t.floor.title} className="space-y-3">
+      <div role="radiogroup" aria-label={t.floor.title} className="space-y-2">
         {rows.map((row) => (
           <ul
             key={row}
-            className="grid gap-3"
+            className="grid gap-2"
             style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
           >
             {tables

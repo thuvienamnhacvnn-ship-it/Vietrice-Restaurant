@@ -151,6 +151,33 @@ function CategoryIcon({ name, className }: { name: string; className?: string })
   return <Resolved className={className} />
 }
 
+/**
+ * The detail panel arrives a line at a time when the dish changes.
+ *
+ * Staggering is doing real work here rather than decorating: the panel carries
+ * a dozen separate facts, and swapping all of them in the same frame reads as
+ * the page glitching. Introduced in reading order, the eye is led from the name
+ * down to the price and the button, which is the order someone decides in.
+ *
+ * The gap is 55ms. Much under that and the steps blur into a single fade;
+ * much over and the last line lands after the reader has already got there,
+ * which turns a flourish into a wait — and this panel is re-entered on every
+ * click along the list.
+ */
+const infoGroup = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.055, delayChildren: 0.04 } },
+  // Leaving is not the mirror of arriving: the outgoing dish is not being read,
+  // so it goes at once instead of unwinding line by line.
+  exit: { transition: { staggerChildren: 0.012, staggerDirection: -1 } },
+}
+
+const infoLine = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+  exit: { opacity: 0, y: -8, transition: { duration: 0.16 } },
+}
+
 export function SmartMenu({
   categories,
   items,
@@ -376,14 +403,17 @@ export function SmartMenu({
             <AnimatePresence mode="wait">
               <motion.div
                 key={active.slug}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                variants={infoGroup}
+                initial="hidden"
+                animate="show"
+                exit="exit"
                 className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] xl:items-center"
               >
-                <div>
-                  <div className="flex flex-wrap gap-2">
+                {/* A stagger container in its own right: variants propagate
+                    through motion components only, so a plain div here would
+                    stop the cascade before it reached a single line. */}
+                <motion.div variants={infoGroup}>
+                  <motion.div variants={infoLine} className="flex flex-wrap gap-2">
                     {active.isBestseller && (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/45 bg-gold/12 px-3 py-1 text-[11px] font-semibold uppercase tracking-luxe text-gold-light">
                         <Star className="h-3 w-3 fill-current" aria-hidden />
@@ -396,20 +426,26 @@ export function SmartMenu({
                         {copy.vegetarian}
                       </span>
                     )}
-                  </div>
+                  </motion.div>
 
-                  <h3 className="mt-3 font-display text-[34px] uppercase leading-tight tracking-wide text-cream sm:text-[40px]">
+                  <motion.h3
+                    variants={infoLine}
+                    className="mt-3 font-display text-[34px] uppercase leading-tight tracking-wide text-cream sm:text-[40px]"
+                  >
                     {localizedName(active, locale)}
-                  </h3>
-                  <p className="mt-0.5 font-display text-xl text-muted">
+                  </motion.h3>
+                  <motion.p variants={infoLine} className="mt-0.5 font-display text-xl text-muted">
                     {localizedSubtitle(active, locale)}
-                  </p>
+                  </motion.p>
 
-                  <p className="mt-3.5 max-w-lg text-[13.5px] leading-relaxed text-cream/80">
+                  <motion.p
+                    variants={infoLine}
+                    className="mt-3.5 max-w-lg text-[13.5px] leading-relaxed text-cream/80"
+                  >
                     {localizedDescription(active, locale)}
-                  </p>
+                  </motion.p>
 
-                  <div className="mt-4 flex items-center gap-2.5">
+                  <motion.div variants={infoLine} className="mt-4 flex items-center gap-2.5">
                     <span className="flex" aria-hidden>
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
@@ -424,13 +460,16 @@ export function SmartMenu({
                     <span className="text-[12.5px] text-muted">
                       ({active.ratingCount} {copy.ratingSuffix})
                     </span>
-                  </div>
+                  </motion.div>
 
-                  <p className="mt-3 font-display text-[34px] leading-none text-gold-light">
+                  <motion.p
+                    variants={infoLine}
+                    className="mt-3 font-display text-[34px] leading-none text-gold-light"
+                  >
                     {formatPrice(active.priceCents, intl)}
-                  </p>
+                  </motion.p>
 
-                  <dl className="mt-5 space-y-2.5 text-[13px]">
+                  <motion.dl variants={infoLine} className="mt-5 space-y-2.5 text-[13px]">
                     <div className="flex items-center gap-3">
                       <dt className="flex w-[150px] shrink-0 items-center gap-2 text-muted">
                         <Flame className="h-4 w-4 text-gold" aria-hidden />
@@ -471,24 +510,26 @@ export function SmartMenu({
                         <dd className="text-cream/85">{active.calories} kcal</dd>
                       </div>
                     )}
-                  </dl>
+                  </motion.dl>
 
-                  <h4 className="mt-5 text-[11.5px] font-semibold uppercase tracking-luxe text-gold/85">
-                    {copy.ingredients}
-                  </h4>
-                  <ul className="mt-2 flex flex-wrap gap-1.5">
-                    {active.ingredients.map((ing) => (
-                      <li
-                        key={ing.nameDe}
-                        className="rounded-md border border-gold/22 bg-black/30 px-2.5 py-1 text-[11.5px] text-cream/80"
-                      >
-                        {locale === 'en' ? ing.nameEn : locale === 'vi' ? ing.nameVi : ing.nameDe}
-                      </li>
-                    ))}
-                  </ul>
+                  <motion.div variants={infoLine}>
+                    <h4 className="mt-5 text-[11.5px] font-semibold uppercase tracking-luxe text-gold/85">
+                      {copy.ingredients}
+                    </h4>
+                    <ul className="mt-2 flex flex-wrap gap-1.5">
+                      {active.ingredients.map((ing) => (
+                        <li
+                          key={ing.nameDe}
+                          className="rounded-md border border-gold/22 bg-black/30 px-2.5 py-1 text-[11.5px] text-cream/80"
+                        >
+                          {locale === 'en' ? ing.nameEn : locale === 'vi' ? ing.nameVi : ing.nameDe}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
 
                   {active.allergenCodes.length > 0 && (
-                    <>
+                    <motion.div variants={infoLine}>
                       <h4 className="mt-4 text-[11.5px] font-semibold uppercase tracking-luxe text-gold/85">
                         {copy.allergens}
                       </h4>
@@ -502,10 +543,10 @@ export function SmartMenu({
                           </li>
                         ))}
                       </ul>
-                    </>
+                    </motion.div>
                   )}
 
-                  <div className="mt-6 flex flex-wrap items-center gap-2.5">
+                  <motion.div variants={infoLine} className="mt-6 flex flex-wrap items-center gap-2.5">
                     <Button
                       size="lg"
                       onClick={handleAdd}
@@ -553,24 +594,25 @@ export function SmartMenu({
                     >
                       <Share2 className="h-5 w-5" aria-hidden />
                     </button>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
                 {/* A dish with a clip is already shown by it, so the still
                     would be the same plate twice — photograph and video
                     overlapping, at odds about which one the eye should settle
                     on. Dishes without a clip keep the showcase unchanged. */}
                 {!hasBackdropVideo(active.slug) && (
-                  <DishShowcase3D
-                    image={
-                      active.slug === 'pho-bo-dac-biet'
-                        ? '/images/menu/pho-bo-bowl.jpg'
-                        : active.thumbnail
-                    }
-                    alt={localizedName(active, locale)}
-                    ingredients={orbitIngredients}
-                    className="order-first xl:order-none"
-                  />
+                  <motion.div variants={infoLine} className="order-first xl:order-none">
+                    <DishShowcase3D
+                      image={
+                        active.slug === 'pho-bo-dac-biet'
+                          ? '/images/menu/pho-bo-bowl.jpg'
+                          : active.thumbnail
+                      }
+                      alt={localizedName(active, locale)}
+                      ingredients={orbitIngredients}
+                    />
+                  </motion.div>
                 )}
               </motion.div>
             </AnimatePresence>
