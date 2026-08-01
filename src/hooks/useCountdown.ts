@@ -79,6 +79,34 @@ function onVisibility() {
 }
 
 /**
+ * The server's clock, ticking, in milliseconds.
+ *
+ * For a component that has to judge several deadlines at once — is this table
+ * overdue, was it just freed, has the lock run out — one subscription reading
+ * "what time is it" beats one `useCountdown` per deadline. Same shared 1 Hz
+ * interval, same server-time anchoring, a quarter of the subscribers.
+ *
+ * Seeded from `serverNowIso` so the server render and the first client render
+ * agree; the effect switches to live time on mount.
+ */
+export function useServerClock(serverNowIso?: string): number {
+  const [offset] = useState(() =>
+    serverNowIso ? new Date(serverNowIso).getTime() - Date.now() : 0,
+  )
+  const [nowMs, setNowMs] = useState(() =>
+    serverNowIso ? new Date(serverNowIso).getTime() : Date.now(),
+  )
+
+  useEffect(() => {
+    const update = (ms: number) => setNowMs(ms + offset)
+    update(Date.now())
+    return subscribe(update)
+  }, [offset])
+
+  return nowMs
+}
+
+/**
  * Ticking countdown anchored to *server* time.
  *
  * `serverNowIso` is the server's clock at render time; the offset against the

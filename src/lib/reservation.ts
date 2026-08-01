@@ -20,6 +20,14 @@ export type TableView = {
   status: TableStatus
   /** ISO timestamp the table frees up, for OCCUPIED/PENDING tables. */
   busyUntilIso: string | null
+  /**
+   * ISO timestamp the table was handed back, for tables freed a moment ago.
+   *
+   * Carried to the guest map so a table that has just come free can say so.
+   * Null for a table that has been sitting empty all evening — "free" and
+   * "just freed" are different pieces of news.
+   */
+  freedAtIso: string | null
 }
 
 /**
@@ -112,6 +120,8 @@ export function getDemoTableViews(slotStart: Date, serverNow: Date): TableView[]
       zone: table.zone,
       status,
       busyUntilIso,
+      // Demo mode has no staff freeing tables, so there is never news to show.
+      freedAtIso: null,
     }
   })
 }

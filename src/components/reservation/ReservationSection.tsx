@@ -16,6 +16,7 @@ import {
   type TableView,
 } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
+import { useFloorStream } from '@/hooks/useFloorStream'
 import { useMobileActionBar } from '@/hooks/useMobileActionBar'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
@@ -55,6 +56,7 @@ const COPY: Record<
     blocked: string
     seats: string
     tooSmall: string
+    justFreed: string
     noneFree: string
     otherTimes: string
     summaryTitle: string
@@ -91,6 +93,7 @@ const COPY: Record<
     blocked: 'nicht verfügbar',
     seats: 'Plätze',
     tooSmall: 'zu klein',
+    justFreed: 'gerade frei',
     noneFree: 'Für diese Zeit ist kein passender Tisch frei. Bitte wählen Sie eine andere Uhrzeit.',
     otherTimes: 'Andere Zeiten',
     summaryTitle: 'Verfügbarkeit zu dieser Zeit',
@@ -130,6 +133,7 @@ const COPY: Record<
     blocked: 'unavailable',
     seats: 'seats',
     tooSmall: 'too small',
+    justFreed: 'just freed',
     noneFree: 'No suitable table is free at this time. Please choose another slot.',
     otherTimes: 'Other times',
     summaryTitle: 'Availability at this time',
@@ -169,6 +173,7 @@ const COPY: Record<
     blocked: 'không khả dụng',
     seats: 'chỗ',
     tooSmall: 'quá nhỏ',
+    justFreed: 'vừa trống',
     noneFree: 'Không có bàn phù hợp vào giờ này. Vui lòng chọn giờ khác.',
     otherTimes: 'Giờ khác',
     summaryTitle: 'Tình trạng bàn giờ này',
@@ -260,9 +265,9 @@ export function ReservationSection({
    * quick-time chips call this — reading `time` here would fetch the previous
    * slot and leave the map disagreeing with the highlighted chip.
    */
-  const refresh = async (slot: string = time) => {
+  const refresh = async (slot: string = time, keepSelection = false) => {
     setLoading(true)
-    setSelected(null)
+    if (!keepSelection) setSelected(null)
     try {
       const params = new URLSearchParams({ date, time: slot, partySize: String(partySize) })
       const res = await fetch(`/api/tables?${params.toString()}`, { cache: 'no-store' })
@@ -270,12 +275,33 @@ export function ReservationSection({
       const data = (await res.json()) as { tables: TableView[]; serverNow: string }
       setTables(data.tables)
       setNowIso(data.serverNow)
+
+      if (keepSelection) {
+        // Only let go of the guest's choice if the floor moved under it. Pulling
+        // a valid selection out from under someone halfway through a booking is
+        // worse than the stale highlight it would be avoiding.
+        setSelected((current) => {
+          if (!current) return null
+          const next = data.tables.find((tb) => tb.id === current.id)
+          return next && isSelectable(next, partySize) ? next : null
+        })
+      }
     } catch {
       // Keep the previous floor plan on failure rather than blanking the map.
     } finally {
       setLoading(false)
     }
   }
+
+  /**
+   * Redraw when staff change the floor from the admin console.
+   *
+   * Without this a guest stares at a map that went stale the moment a walk-in
+   * was seated, and only finds out when the booking is rejected. The stream
+   * pushes; this re-queries the same endpoint the form already uses, so there
+   * is one definition of what a bookable table is.
+   */
+  useFloorStream(() => void refresh(time, true))
 
   const rows = [1, 2, 3]
 
@@ -511,6 +537,7 @@ export function ReservationSection({
                             seats: copy.seats,
                             tooSmall: copy.tooSmall,
                             table: copy.table,
+                            justFreed: copy.justFreed,
                           }}
                         />
                       ))}

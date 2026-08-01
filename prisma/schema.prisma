@@ -178,6 +178,14 @@ model RestaurantTable {
   /// Manual block window used for maintenance / private events.
   blockedFrom DateTime?
   blockedTo   DateTime?
+  /// When a party seated by hand is expected to leave. Drives the countdown on
+  /// both the floor console and the public map. Only the countdown expires —
+  /// the table stays OCCUPIED until staff hand it back, because a table that
+  /// re-opened itself while guests were still sitting at it would be sold twice.
+  busyUntil   DateTime?
+  /// When the table was last handed back, so "just freed" can be derived
+  /// without a scheduler. Cleared the moment it is seated again.
+  freedAt     DateTime?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 

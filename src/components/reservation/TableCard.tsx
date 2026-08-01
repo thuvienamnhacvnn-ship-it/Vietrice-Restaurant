@@ -1,8 +1,9 @@
 'use client'
 
-import { Lock, Phone, Wrench } from 'lucide-react'
+import { Lock, Phone, Sparkles, Wrench } from 'lucide-react'
 
-import { useCountdown } from '@/hooks/useCountdown'
+import { JUST_FREED_MINUTES } from '@/lib/floor'
+import { useCountdown, useServerClock } from '@/hooks/useCountdown'
 import { isSelectable, type TableView } from '@/lib/reservation'
 import { cn } from '@/lib/utils'
 import { TableGraphic } from './TableGraphic'
@@ -75,11 +76,26 @@ export function TableCard({
     /** Localised word for "table", used in the accessible name. */
     table: string
     tooSmall: string
+    justFreed: string
   }
 }) {
   const selectable = isSelectable(table, partySize)
   const tooSmall = table.status === 'AVAILABLE' && partySize > table.capacity
   const occupied = table.status === 'OCCUPIED'
+
+  /**
+   * A table staff handed back a moment ago.
+   *
+   * Derived against the ticking server clock rather than baked in at render, so
+   * the flag fades on its own while the page sits open. Worth saying plainly:
+   * on a floor plan where most tables are free most of the time, "free" is not
+   * news and nobody reads it — "free right now, ahead of you" is, and it is the
+   * one moment a guest can act on faster than anyone else.
+   */
+  const nowMs = useServerClock(serverNowIso)
+  const freedAtMs = table.freedAtIso ? new Date(table.freedAtIso).getTime() : null
+  const justFreed =
+    selectable && freedAtMs !== null && nowMs - freedAtMs < JUST_FREED_MINUTES * 60_000
 
   const statusLabel = occupied
     ? labels.occupied
@@ -102,6 +118,7 @@ export function TableCard({
       className={cn(
         'fx-press group relative aspect-square w-full rounded-2xl p-1 ring-2 transition-all duration-300',
         STATUS_RING[table.status],
+        justFreed && !selected && 'ring-success shadow-[0_0_18px_-4px_rgb(34_197_94/0.85)]',
         selected && 'ring-gold shadow-gold-lg',
         selectable ? 'cursor-pointer' : 'cursor-not-allowed',
         // Busy tables sit back; free ones stay bright and forward.
@@ -135,6 +152,16 @@ export function TableCard({
       <span className="pointer-events-none absolute inset-x-0 top-[64%] text-center text-[9.5px] font-medium text-cream/60 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
         {table.capacity} {labels.seats}
       </span>
+
+      {/* Just handed back by staff — the only badge that outranks the seat count */}
+      {justFreed && (
+        <span className="pointer-events-none absolute inset-x-1 top-1 flex justify-center">
+          <span className="inline-flex items-center gap-1 rounded-full border border-success/70 bg-success/25 px-2 py-[2px] text-[9.5px] font-semibold uppercase tracking-wide text-success backdrop-blur-sm">
+            <Sparkles className="h-2.5 w-2.5" aria-hidden />
+            {labels.justFreed}
+          </span>
+        </span>
+      )}
 
       {/* Busy: red digital countdown */}
       {occupied && table.busyUntilIso && (

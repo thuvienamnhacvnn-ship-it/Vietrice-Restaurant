@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
+  Armchair,
   Bell,
   CalendarClock,
   History,
@@ -28,6 +29,8 @@ import type { Locale } from '@/i18n/config'
 /** Every entry points at a route that exists — a nav link to a 404 is worse than none. */
 const NAV = [
   { href: '/admin', key: 'dashboard', Icon: LayoutDashboard },
+  // Second, not last: this is the screen a manager keeps open through service.
+  { href: '/admin/floor', key: 'floor', Icon: Armchair },
   { href: '/admin/orders', key: 'orders', Icon: ShoppingBag },
   { href: '/admin/reservations', key: 'reservations', Icon: CalendarClock },
   { href: '/admin/tables', key: 'tables', Icon: LayoutGrid },
