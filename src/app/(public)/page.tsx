@@ -2,7 +2,9 @@ import { allergens } from '@/content/menu'
 import { getMenuData, getPublicGallery, getPublicPromotions } from '@/server/catalogue'
 import { getLocale } from '@/i18n'
 import { nextExpiring } from '@/lib/promotions'
-import { combineDateTime, getDemoTableViews, toDateInput } from '@/lib/reservation'
+import { RESERVATION_DEFAULTS } from '@/content/tables'
+import { combineDateTime, toDateInput } from '@/lib/reservation'
+import { getTableViews } from '@/server/tables'
 import { HeroDishShowcase } from '@/components/home/HeroDishShowcase'
 import { AIAssistantSection } from '@/components/assistant/AIAssistantSection'
 import { GallerySection } from '@/components/gallery/GallerySection'
@@ -34,9 +36,17 @@ export default async function HomePage() {
   // manager-controlled flag behind the eight-dish strip.
   const heroDishes = menuItems.filter((d) => d.isSignature)
 
+  // Read the real floor, the same as the reservation page and the admin
+  // console. This was seeded from the demo generator, so the home page opened
+  // on invented occupancy and disagreed with the console until the client
+  // re-queried.
   const date = toDateInput(now)
   const time = '19:00'
-  const tables = getDemoTableViews(combineDateTime(date, time), now)
+  const tables = await getTableViews(
+    combineDateTime(date, time),
+    RESERVATION_DEFAULTS.durationMinutes,
+    now,
+  )
 
   const allergenLabels = Object.fromEntries(
     allergens.map((a) => [

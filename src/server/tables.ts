@@ -86,17 +86,30 @@ export async function getTableViews(
       status = table.status
 
       /**
-       * A walk-in's countdown, shown to guests the same way a booking's is.
+       * A hand-seated party occupies the slots it actually overlaps, not every
+       * slot forever.
        *
-       * Note what does NOT happen here: an elapsed `busyUntil` does not free
-       * the table. Unlike a lock, which is a decision about the future and can
-       * safely expire, this is a guess about a party that is physically sitting
-       * there. Three hours passing is not evidence they left, and reopening the
-       * table on that guess would sell a seat with someone already in it. The
-       * console flags it as overdue instead, and a human ends it.
+       * Without this a walk-in seated at lunchtime took the table off the
+       * booking form for next Saturday too, because the stored status carries
+       * no sense of when. The window is the same half-open overlap rule used
+       * for reservations, so the two kinds of occupancy behave identically.
+       *
+       * Note what still does NOT happen: an elapsed `busyUntil` does not free
+       * the table *now*. Unlike a lock, which is a decision about the future
+       * and can safely expire, this is a guess about a party physically
+       * sitting there — three hours passing is not evidence they left, and
+       * reopening on that guess would sell an occupied seat. A slot that
+       * starts after the window ends is a different question, and that one is
+       * safe to answer. An open-ended seating with no `busyUntil` holds every
+       * slot until a human ends it.
        */
       if (status === 'OCCUPIED' && table.busyUntil) {
-        busyUntilIso = table.busyUntil.toISOString()
+        const stillCovers = table.busyUntil > slotStart
+        if (stillCovers) {
+          busyUntilIso = table.busyUntil.toISOString()
+        } else {
+          status = 'AVAILABLE'
+        }
       }
     }
 

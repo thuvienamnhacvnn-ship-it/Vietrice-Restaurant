@@ -17,6 +17,28 @@ function BusyCountdown({ untilIso, serverNowIso }: { untilIso: string; serverNow
   const totalMinutes = c.expired ? 0 : c.days * 24 * 60 + c.hours * 60 + c.minutes
   const seconds = c.expired ? 0 : c.seconds
 
+  /**
+   * Over an hour, count in hours and minutes.
+   *
+   * The readout was always minutes:seconds, which was fine while every busy
+   * table came from a 90-minute booking. A hand-seated party can now hold a
+   * table for six hours, and "357:22" is not a number anyone reads as time —
+   * it looks like a fault. Under an hour the seconds still earn their place.
+   */
+  if (totalMinutes >= 60) {
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center rounded-[3px] border border-danger/55 bg-black/80 px-1.5 py-[2px]',
+          'font-mono text-[11px] font-bold leading-none tabular-nums tracking-[0.08em] text-danger',
+          'shadow-[0_0_10px_-2px_rgb(239_68_68/0.75)]',
+        )}
+      >
+        {Math.floor(totalMinutes / 60)}:{String(totalMinutes % 60).padStart(2, '0')}h
+      </span>
+    )
+  }
+
   return (
     <span
       className={cn(
