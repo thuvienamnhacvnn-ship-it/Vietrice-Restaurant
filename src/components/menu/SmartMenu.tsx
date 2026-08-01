@@ -30,6 +30,7 @@ import { Button, ButtonLink } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { SectionFrame } from '@/components/ui/SectionFrame'
 import { DishShowcase3D } from './DishShowcase3D'
+import { MenuBackdropVideo, hasBackdropVideo } from './MenuBackdropVideo'
 
 const COPY: Record<
   Locale,
@@ -231,7 +232,14 @@ export function SmartMenu({
       aria-labelledby="smart-menu-heading"
       className="border-t border-gold/10 bg-background"
     >
-      <Container wide className="flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]">
+      <MenuBackdropVideo slug={active.slug} />
+
+      {/* Above the backdrop. Without this the grid inherits the stacking
+          context's default order and the plate drifts over the controls. */}
+      <Container
+        wide
+        className="relative z-10 flex h-full flex-col justify-center py-14 lg:pb-4 lg:pt-[60px]"
+      >
         <div className="grid gap-8 lg:grid-cols-[190px_minmax(0,270px)_minmax(0,1fr)] lg:gap-7">
           {/* ---- Column 1: title, search, categories ---- */}
           <div>
@@ -548,12 +556,22 @@ export function SmartMenu({
                   </div>
                 </div>
 
-                <DishShowcase3D
-                  image={active.slug === 'pho-bo-dac-biet' ? '/images/menu/pho-bo-bowl.jpg' : active.thumbnail}
-                  alt={localizedName(active, locale)}
-                  ingredients={orbitIngredients}
-                  className="order-first xl:order-none"
-                />
+                {/* A dish with a clip is already shown by it, so the still
+                    would be the same plate twice — photograph and video
+                    overlapping, at odds about which one the eye should settle
+                    on. Dishes without a clip keep the showcase unchanged. */}
+                {!hasBackdropVideo(active.slug) && (
+                  <DishShowcase3D
+                    image={
+                      active.slug === 'pho-bo-dac-biet'
+                        ? '/images/menu/pho-bo-bowl.jpg'
+                        : active.thumbnail
+                    }
+                    alt={localizedName(active, locale)}
+                    ingredients={orbitIngredients}
+                    className="order-first xl:order-none"
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
           </div>
