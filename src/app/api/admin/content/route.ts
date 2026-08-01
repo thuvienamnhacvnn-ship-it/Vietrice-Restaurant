@@ -7,13 +7,17 @@ import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 /**
- * Edits for the smaller admin boards — tables, promotions, gallery, guests and
- * opening hours.
+ * Edits for the smaller admin boards — tables, guests and opening hours.
  *
  * A discriminated union rather than a generic "update any row" endpoint: each
  * variant names exactly which columns it may touch, so no request can reach a
  * field the console does not offer. Every write is audited with the acting
  * user, the same as reservations and orders.
+ *
+ * Promotions and gallery media used to live here as toggle-only variants. They
+ * moved to `/api/admin/promotions` and `/api/admin/gallery` when those boards
+ * grew create and delete: one entity, one endpoint, rather than a write split
+ * across two files by how many fields it happens to touch.
  */
 const schema = z.discriminatedUnion('entity', [
   z.object({
@@ -23,19 +27,6 @@ const schema = z.discriminatedUnion('entity', [
     zone: z.string().trim().max(60).nullable().optional(),
     notes: z.string().trim().max(300).nullable().optional(),
     capacity: z.number().int().min(1).max(20).optional(),
-  }),
-  z.object({
-    entity: z.literal('promotion'),
-    id: z.string().min(1),
-    isActive: z.boolean().optional(),
-    sortOrder: z.number().int().min(0).max(99).optional(),
-  }),
-  z.object({
-    entity: z.literal('gallery'),
-    id: z.string().min(1),
-    isVisible: z.boolean().optional(),
-    isFeatured: z.boolean().optional(),
-    sortOrder: z.number().int().min(0).max(999).optional(),
   }),
   z.object({
     entity: z.literal('customer'),
@@ -94,38 +85,6 @@ export async function POST(request: Request) {
           'RestaurantTable',
           id,
           { isActive: before.isActive, zone: before.zone, capacity: before.capacity },
-          changes,
-        )
-      })
-    } else if (input.entity === 'promotion') {
-      const { entity: _e, id, ...changes } = input
-      const before = await prisma.promotion.findUnique({ where: { id } })
-      if (!before) return NextResponse.json({ error: 'Not found.' }, { status: 404 })
-      await prisma.$transaction(async (tx) => {
-        await tx.promotion.update({ where: { id }, data: changes })
-        await audit(
-          tx,
-          'Promotion',
-          id,
-          { isActive: before.isActive, sortOrder: before.sortOrder },
-          changes,
-        )
-      })
-    } else if (input.entity === 'gallery') {
-      const { entity: _e, id, ...changes } = input
-      const before = await prisma.galleryItem.findUnique({ where: { id } })
-      if (!before) return NextResponse.json({ error: 'Not found.' }, { status: 404 })
-      await prisma.$transaction(async (tx) => {
-        await tx.galleryItem.update({ where: { id }, data: changes })
-        await audit(
-          tx,
-          'GalleryItem',
-          id,
-          {
-            isVisible: before.isVisible,
-            isFeatured: before.isFeatured,
-            sortOrder: before.sortOrder,
-          },
           changes,
         )
       })

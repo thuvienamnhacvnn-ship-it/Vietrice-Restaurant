@@ -81,7 +81,7 @@ export function DishVideoUpload({
       setBusy(t.menu.uploadingVideo)
       const videoBlob = await upload(`dish-videos/${slug}.mp4`, file, {
         access: 'public',
-        handleUploadUrl: '/api/admin/video',
+        handleUploadUrl: '/api/admin/upload',
         contentType: file.type,
       })
 
@@ -93,7 +93,7 @@ export function DishVideoUpload({
         const posterBlob = await upload(
           `dish-videos/${slug}-poster.jpg`,
           new File([frame], `${slug}-poster.jpg`, { type: 'image/jpeg' }),
-          { access: 'public', handleUploadUrl: '/api/admin/video', contentType: 'image/jpeg' },
+          { access: 'public', handleUploadUrl: '/api/admin/upload', contentType: 'image/jpeg' },
         )
         posterUrl = posterBlob.url
       }

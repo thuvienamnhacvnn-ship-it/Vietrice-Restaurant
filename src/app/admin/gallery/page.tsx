@@ -28,9 +28,14 @@ export default async function AdminGalleryPage() {
           id: i.id,
           url: i.url,
           title: locale === 'en' ? i.titleEn : locale === 'vi' ? i.titleVi : i.titleDe,
+          titleDe: i.titleDe,
+          titleEn: i.titleEn,
+          titleVi: i.titleVi,
+          altText: i.altText,
           category: i.category,
           isVisible: i.isVisible,
           isFeatured: i.isFeatured,
+          sortOrder: i.sortOrder,
         }))}
       />
     </AdminShell>

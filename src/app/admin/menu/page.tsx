@@ -32,11 +32,18 @@ export default async function AdminMenuPage() {
   return (
     <AdminShell {...ctx}>
       <MenuBoard
-        categories={categories.map((c) => ({ slug: c.slug, name: catName(c) }))}
+        categories={categories.map((c) => ({ id: c.id, slug: c.slug, name: catName(c) }))}
         dishes={items.map((i) => ({
           id: i.id,
           slug: i.slug,
           name: localizedName(i, locale),
+          nameDe: i.nameDe,
+          nameEn: i.nameEn,
+          nameVi: i.nameVi,
+          descriptionDe: i.descriptionDe,
+          descriptionEn: i.descriptionEn,
+          descriptionVi: i.descriptionVi,
+          categoryId: i.categoryId,
           categorySlug: i.category.slug,
           categoryName: catName(i.category),
           image: i.image,
