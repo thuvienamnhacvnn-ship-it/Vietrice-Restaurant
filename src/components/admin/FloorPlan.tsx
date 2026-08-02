@@ -189,6 +189,8 @@ function TableTile({
   nowMs,
   selected,
   busy,
+  gridRow,
+  gridCol,
   onSelect,
   onToggleBusy,
 }: {
@@ -197,6 +199,8 @@ function TableTile({
   nowMs: number
   selected: boolean
   busy: boolean
+  gridRow: number
+  gridCol: number
   onSelect: (id: string) => void
   onToggleBusy: (table: FloorTable) => void
 }) {
@@ -206,7 +210,12 @@ function TableTile({
   const isBusy = state === 'occupied' || state === 'arriving' || state === 'overdue'
 
   return (
-    <li className="flex flex-col items-center gap-1.5">
+    // `min-h-0` matters: without it the cell refuses to shrink below its
+    // content and the rows overflow the 6:4 frame instead of dividing it.
+    <li
+      className="flex min-h-0 flex-col items-center gap-2"
+      style={{ gridRow, gridColumn: gridCol }}
+    >
       <button
         type="button"
         role="radio"
@@ -214,7 +223,11 @@ function TableTile({
         onClick={() => onSelect(table.id)}
         aria-label={`${t.tables.title} ${table.number}, ${table.capacity} ${t.tables.capacity}, ${t.floor.state[state]}`}
         className={cn(
-          'fx-press group relative aspect-square w-full rounded-2xl p-1 ring-2 transition-all duration-300',
+          // Takes the height the row has left rather than forcing a square.
+          // The drawing is an SVG on a 100x100 viewBox with the default
+          // `xMidYMid meet`, so it centres and letterboxes inside whatever
+          // shape the cell turns out to be — it never stretches.
+          'fx-press group relative min-h-0 w-full flex-1 rounded-2xl p-1 ring-2 transition-all duration-300',
           STATE_RING[state],
           STATE_BLINKS[state] && 'animate-blink',
           selected && 'ring-gold shadow-gold-lg',
@@ -332,12 +345,8 @@ export function FloorPlan({
   const cols = useMemo(() => tables.reduce((m, tb) => Math.max(m, tb.gridCol), 1), [tables])
 
   return (
-    // Capped rather than filling the column. At full width on a desk monitor
-    // each table was drawn the size of a playing card, which reads as a feature
-    // demanding attention; the plan is a reference the manager glances at, and
-    // a glance wants the whole room in one fixation.
-    <div className="w-full max-w-[560px] rounded-xl border border-gold/20 bg-black/25 p-3">
-      <ul className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
+    <div className="w-full max-w-[900px] rounded-xl border border-gold/20 bg-black/25 p-4">
+      <ul className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px]">
         {STATE_ORDER.map((s) => (
           <li key={s} className="flex items-center gap-1.5">
             <span className={cn('h-2.5 w-2.5 rounded-full', STATE_DOT[s])} aria-hidden />
@@ -346,30 +355,46 @@ export function FloorPlan({
         ))}
       </ul>
 
-      <div role="radiogroup" aria-label={t.floor.title} className="space-y-2">
-        {rows.map((row) => (
-          <ul
-            key={row}
-            className="grid gap-2"
-            style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-          >
-            {tables
-              .filter((tb) => tb.gridRow === row)
-              .sort((a, b) => a.gridCol - b.gridCol)
-              .map((tb) => (
-                <TableTile
-                  key={tb.id}
-                  table={tb}
-                  state={deriveState(tb, nowMs)}
-                  nowMs={nowMs}
-                  selected={tb.id === selectedId}
-                  busy={busyId === tb.id}
-                  onSelect={onSelect}
-                  onToggleBusy={onToggleBusy}
-                />
-              ))}
-          </ul>
-        ))}
+      {/* A 6:4 frame, and one grid rather than a stack of per-row ones.
+          Stacked rows could only size themselves from their contents, so the
+          plan's proportions were whatever twelve square tiles happened to add
+          up to. Here the frame states the shape and the rows divide it, which
+          is what lets the room be wide and the tables sit apart in it.
+          Capped in width so the 4:6 height cannot run away on a wide monitor:
+          at the cap this is 900x600, not a plan that outgrows the screen. */}
+      <div
+        role="radiogroup"
+        aria-label={t.floor.title}
+        className="aspect-[6/4] w-full"
+      >
+        <ul
+          className="grid h-full w-full gap-x-6 gap-y-5"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${rows.length}, minmax(0, 1fr))`,
+          }}
+        >
+          {tables
+            .slice()
+            .sort((a, b) => a.gridRow - b.gridRow || a.gridCol - b.gridCol)
+            .map((tb) => (
+              <TableTile
+                key={tb.id}
+                table={tb}
+                state={deriveState(tb, nowMs)}
+                nowMs={nowMs}
+                selected={tb.id === selectedId}
+                busy={busyId === tb.id}
+                onSelect={onSelect}
+                onToggleBusy={onToggleBusy}
+                // Placed explicitly rather than by document order, so a table
+                // moved to another spot in Admin lands there and a gap in the
+                // layout stays a gap instead of everything shuffling up.
+                gridRow={tb.gridRow}
+                gridCol={tb.gridCol}
+              />
+            ))}
+        </ul>
       </div>
     </div>
   )
